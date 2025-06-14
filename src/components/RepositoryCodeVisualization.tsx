@@ -86,18 +86,18 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     const repositoryNodes: RepositoryNode[] = [
       {
         id: 'repo-root',
-        name: repository.name,
+        name: repository?.name || 'Repository',
         type: 'repository',
         size: 150,
         importance: 10,
         connections: ['src', 'config', 'docs', 'tests'],
-        position: { x: 400, y: 200 },
+        position: { x: 400, y: 250 },
         color: '#3B82F6',
         metadata: {
-          language: repository.language,
+          language: repository?.language || 'TypeScript',
           fileCount: 50,
-          lastModified: repository.updated_at,
-          contributors: contributors.length,
+          lastModified: repository?.updated_at,
+          contributors: contributors?.length || 0,
           complexity: 'high'
         }
       },
@@ -108,112 +108,115 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         size: 120,
         importance: 9,
         connections: ['components', 'hooks', 'services', 'utils'],
-        position: { x: 200, y: 100 },
+        position: { x: 200, y: 150 },
         color: '#10B981',
         children: [],
         metadata: {
           language: 'TypeScript',
           fileCount: 25,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.8)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.8)),
           complexity: 'high'
         }
       },
       {
         id: 'components',
-        name: 'Components',
+        name: 'components/',
         type: 'component',
         size: 100,
         importance: 8,
         connections: ['ui-components', 'features'],
-        position: { x: 100, y: 50 },
+        position: { x: 100, y: 100 },
         color: '#8B5CF6',
         parent: 'src',
+        children: [],
         metadata: {
           language: 'TSX',
           fileCount: 15,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.6)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.6)),
           complexity: 'medium'
         }
       },
       {
         id: 'hooks',
-        name: 'Hooks',
+        name: 'hooks/',
         type: 'service',
         size: 80,
         importance: 7,
         connections: ['api-hooks', 'state-hooks'],
-        position: { x: 300, y: 50 },
+        position: { x: 300, y: 100 },
         color: '#F59E0B',
         parent: 'src',
+        children: [],
         metadata: {
           language: 'TypeScript',
           fileCount: 8,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.4)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.4)),
           complexity: 'medium'
         }
       },
       {
         id: 'services',
-        name: 'Services',
+        name: 'services/',
         type: 'service',
         size: 90,
         importance: 8,
         connections: ['api', 'github-service'],
-        position: { x: 150, y: 150 },
+        position: { x: 150, y: 200 },
         color: '#EF4444',
         parent: 'src',
+        children: [],
         metadata: {
           language: 'TypeScript',
           fileCount: 5,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.3)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.3)),
           complexity: 'high'
         }
       },
       {
         id: 'config',
-        name: 'Config',
+        name: 'config/',
         type: 'config',
         size: 60,
         importance: 6,
         connections: ['build-config', 'env-config'],
-        position: { x: 600, y: 100 },
+        position: { x: 600, y: 150 },
         color: '#6B7280',
         metadata: {
           language: 'JSON',
           fileCount: 8,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.2)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.2)),
           complexity: 'low'
         }
       },
       {
         id: 'docs',
-        name: 'Documentation',
+        name: 'docs/',
         type: 'documentation',
         size: 70,
         importance: 5,
         connections: [],
-        position: { x: 600, y: 300 },
+        position: { x: 600, y: 350 },
         color: '#84CC16',
         metadata: {
           language: 'Markdown',
           fileCount: 3,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.5)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.5)),
           complexity: 'low'
         }
       },
       {
         id: 'tests',
-        name: 'Tests',
+        name: 'tests/',
         type: 'test',
         size: 65,
         importance: 6,
         connections: ['unit-tests', 'integration-tests'],
-        position: { x: 200, y: 300 },
+        position: { x: 200, y: 350 },
         color: '#F97316',
         metadata: {
           language: 'TypeScript',
           fileCount: 12,
-          contributors: Math.max(1, Math.floor(contributors.length * 0.4)),
+          contributors: Math.max(1, Math.floor((contributors?.length || 1) * 0.4)),
           complexity: 'medium'
         }
       }
@@ -234,9 +237,10 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           type: 'component',
           size: 100,
           importance: 9,
-          connections: ['GitHubIntegration.tsx', 'RepositoryDashboard.tsx', 'ui-folder'],
+          connections: ['GitHubIntegration', 'RepositoryDashboard', 'ui-folder'],
           position: { x: 200, y: 150 },
           color: '#8B5CF6',
+          children: [],
           metadata: {
             language: 'TSX',
             fileCount: 15,
@@ -244,12 +248,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'GitHubIntegration.tsx',
+          id: 'GitHubIntegration',
           name: 'GitHubIntegration.tsx',
           type: 'file',
           size: 80,
           importance: 8,
-          connections: ['useGitHubData.ts', 'RepositoryDashboard.tsx'],
+          connections: ['useGitHubData', 'RepositoryDashboard'],
           position: { x: 100, y: 80 },
           color: '#3B82F6',
           parent: 'components-dir',
@@ -262,12 +266,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'RepositoryDashboard.tsx',
+          id: 'RepositoryDashboard',
           name: 'RepositoryDashboard.tsx',
           type: 'file',
           size: 85,
           importance: 8,
-          connections: ['GitHubIntegration.tsx', 'KeyMetricsCards.tsx', 'ContributorAnalytics.tsx'],
+          connections: ['KeyMetricsCards', 'ContributorAnalytics', 'CodeActivityCharts'],
           position: { x: 300, y: 80 },
           color: '#10B981',
           parent: 'components-dir',
@@ -285,9 +289,10 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           type: 'service',
           size: 70,
           importance: 7,
-          connections: ['useGitHubData.ts', 'use-toast.ts'],
+          connections: ['useGitHubData', 'use-toast'],
           position: { x: 500, y: 150 },
           color: '#F59E0B',
+          children: [],
           metadata: {
             language: 'TypeScript',
             fileCount: 3,
@@ -295,12 +300,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'useGitHubData.ts',
+          id: 'useGitHubData',
           name: 'useGitHubData.ts',
           type: 'file',
           size: 60,
           importance: 7,
-          connections: ['GitHubIntegration.tsx', 'githubApi.ts'],
+          connections: ['githubApi'],
           position: { x: 450, y: 80 },
           color: '#EF4444',
           parent: 'hooks-dir',
@@ -318,9 +323,10 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           type: 'service',
           size: 65,
           importance: 6,
-          connections: ['githubApi.ts'],
+          connections: ['githubApi'],
           position: { x: 200, y: 250 },
           color: '#EC4899',
+          children: [],
           metadata: {
             language: 'TypeScript',
             fileCount: 1,
@@ -328,12 +334,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'githubApi.ts',
+          id: 'githubApi',
           name: 'githubApi.ts',
           type: 'file',
           size: 55,
           importance: 6,
-          connections: ['useGitHubData.ts'],
+          connections: [],
           position: { x: 150, y: 320 },
           color: '#F97316',
           parent: 'services-dir',
@@ -346,6 +352,128 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         }
       ];
+    } else if (parentId === 'components') {
+      drillDownNodes = [
+        {
+          id: 'GitHubIntegration-file',
+          name: 'GitHubIntegration.tsx',
+          type: 'file',
+          size: 80,
+          importance: 9,
+          connections: ['useGitHubData-hook', 'RepositoryDashboard-file'],
+          position: { x: 150, y: 100 },
+          color: '#3B82F6',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'high',
+            imports: ['useGitHubData', 'RepositoryDashboard', 'gsap', 'Card', 'Button'],
+            exports: ['GitHubIntegration']
+          }
+        },
+        {
+          id: 'RepositoryDashboard-file',
+          name: 'RepositoryDashboard.tsx',
+          type: 'file',
+          size: 85,
+          importance: 9,
+          connections: ['KeyMetricsCards-file', 'ContributorAnalytics-file', 'CodeActivityCharts-file'],
+          position: { x: 400, y: 100 },
+          color: '#10B981',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'high',
+            imports: ['KeyMetricsCards', 'ContributorAnalytics', 'CodeActivityCharts', 'Tabs'],
+            exports: ['RepositoryDashboard']
+          }
+        },
+        {
+          id: 'RepositoryCodeVisualization-file',
+          name: 'RepositoryCodeVisualization.tsx',
+          type: 'file',
+          size: 90,
+          importance: 8,
+          connections: ['gsap-lib'],
+          position: { x: 650, y: 100 },
+          color: '#8B5CF6',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'high',
+            imports: ['gsap', 'Card', 'Button', 'Badge'],
+            exports: ['RepositoryCodeVisualization']
+          }
+        },
+        {
+          id: 'ui-folder',
+          name: 'ui/',
+          type: 'component',
+          size: 70,
+          importance: 7,
+          connections: ['card-component', 'button-component', 'badge-component'],
+          position: { x: 300, y: 250 },
+          color: '#F59E0B',
+          children: [],
+          metadata: {
+            language: 'TSX',
+            fileCount: 20,
+            complexity: 'medium'
+          }
+        },
+        {
+          id: 'dashboard-folder',
+          name: 'dashboard/',
+          type: 'component',
+          size: 75,
+          importance: 8,
+          connections: ['KeyMetricsCards-file', 'ContributorAnalytics-file'],
+          position: { x: 150, y: 250 },
+          color: '#EC4899',
+          children: [],
+          metadata: {
+            language: 'TSX',
+            fileCount: 5,
+            complexity: 'high'
+          }
+        },
+        {
+          id: 'KeyMetricsCards-file',
+          name: 'KeyMetricsCards.tsx',
+          type: 'file',
+          size: 60,
+          importance: 7,
+          connections: ['Card', 'recharts'],
+          position: { x: 50, y: 350 },
+          color: '#06B6D4',
+          parent: 'dashboard-folder',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'medium',
+            imports: ['Card', 'recharts', 'Badge'],
+            exports: ['KeyMetricsCards']
+          }
+        },
+        {
+          id: 'ContributorAnalytics-file',
+          name: 'ContributorAnalytics.tsx',
+          type: 'file',
+          size: 65,
+          importance: 7,
+          connections: ['recharts', 'Avatar'],
+          position: { x: 250, y: 350 },
+          color: '#84CC16',
+          parent: 'dashboard-folder',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'medium',
+            imports: ['recharts', 'Avatar', 'Card'],
+            exports: ['ContributorAnalytics']
+          }
+        }
+      ];
     }
 
     setNodes(drillDownNodes);
@@ -353,19 +481,33 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
   };
 
   const handleNodeClick = (node: RepositoryNode) => {
-    if (node.children !== undefined || ['src', 'components', 'hooks', 'services'].includes(node.id)) {
-      // Animate transition
+    console.log('Node clicked:', node.id, node);
+    
+    // Check if this node can be expanded
+    const canExpand = node.children !== undefined || 
+                     ['src', 'components', 'hooks', 'services', 'components-dir'].includes(node.id);
+    
+    if (canExpand) {
+      console.log('Expanding node:', node.id);
+      
+      // Animate transition out
       gsap.to('.repo-node', {
         scale: 0,
         opacity: 0,
         duration: 0.5,
         ease: "power2.in",
         onComplete: () => {
+          console.log('Transition complete, setting level to:', node.id);
           setCurrentLevel(node.id);
-          setBreadcrumb([...breadcrumb, node.name]);
+          setBreadcrumb(prev => {
+            const newBreadcrumb = [...prev, node.name];
+            console.log('New breadcrumb:', newBreadcrumb);
+            return newBreadcrumb;
+          });
         }
       });
     } else {
+      // Just select the node for details
       setSelectedNode(node);
       gsap.to(`[data-node-id="${node.id}"]`, {
         scale: 1.4,
@@ -378,6 +520,8 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
   };
 
   const handleBackNavigation = () => {
+    console.log('Back navigation clicked, current level:', currentLevel);
+    
     if (currentLevel !== 'root') {
       gsap.to('.repo-node', {
         scale: 0,
@@ -385,8 +529,18 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         duration: 0.5,
         ease: "power2.in",
         onComplete: () => {
-          setCurrentLevel('root');
-          setBreadcrumb(['Repository']);
+          // Determine the parent level
+          let newLevel = 'root';
+          let newBreadcrumb = ['Repository'];
+          
+          if (currentLevel === 'components') {
+            newLevel = 'src';
+            newBreadcrumb = ['Repository', 'src/'];
+          }
+          
+          console.log('Setting new level:', newLevel);
+          setCurrentLevel(newLevel);
+          setBreadcrumb(newBreadcrumb);
         }
       });
     }
@@ -407,8 +561,10 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     svg.setAttribute('width', width.toString());
     svg.setAttribute('height', height.toString());
 
-    // Create animated background grid
+    // Create defs for patterns and markers
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    
+    // Grid pattern
     const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
     pattern.setAttribute('id', 'grid');
     pattern.setAttribute('width', '50');
@@ -426,49 +582,48 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     defs.appendChild(pattern);
     svg.appendChild(defs);
 
+    // Background
     const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     backgroundRect.setAttribute('width', '100%');
     backgroundRect.setAttribute('height', '100%');
     backgroundRect.setAttribute('fill', 'url(#grid)');
     svg.appendChild(backgroundRect);
 
-    // Create animated connections with import/export relationships
+    // Create arrow marker for connections
+    const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    arrowMarker.setAttribute('id', 'arrowhead');
+    arrowMarker.setAttribute('markerWidth', '10');
+    arrowMarker.setAttribute('markerHeight', '7');
+    arrowMarker.setAttribute('refX', '9');
+    arrowMarker.setAttribute('refY', '3.5');
+    arrowMarker.setAttribute('orient', 'auto');
+    
+    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrowPath.setAttribute('points', '0 0, 10 3.5, 0 7');
+    arrowPath.setAttribute('fill', '#64748B');
+    arrowMarker.appendChild(arrowPath);
+    defs.appendChild(arrowMarker);
+
+    // Create connections with proper arrows
     nodeList.forEach((node) => {
       node.connections.forEach((connectionId) => {
-        const targetNode = nodeList.find(n => n.id === connectionId);
+        const targetNode = nodeList.find(n => n.id === connectionId || n.name.includes(connectionId));
         if (targetNode) {
           const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
           line.setAttribute('x1', node.position.x.toString());
           line.setAttribute('y1', node.position.y.toString());
           line.setAttribute('x2', targetNode.position.x.toString());
           line.setAttribute('y2', targetNode.position.y.toString());
-          line.setAttribute('stroke', '#475569');
-          line.setAttribute('stroke-width', '3');
-          line.setAttribute('opacity', '0.4');
+          line.setAttribute('stroke', '#64748B');
+          line.setAttribute('stroke-width', '2');
+          line.setAttribute('opacity', '0.6');
+          line.setAttribute('marker-end', 'url(#arrowhead)');
           line.setAttribute('class', 'connection-line');
           
-          // Add directional arrow for imports/exports
-          const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-          arrowMarker.setAttribute('id', `arrow-${node.id}-${connectionId}`);
-          arrowMarker.setAttribute('viewBox', '0 0 10 10');
-          arrowMarker.setAttribute('refX', '5');
-          arrowMarker.setAttribute('refY', '3');
-          arrowMarker.setAttribute('markerWidth', '6');
-          arrowMarker.setAttribute('markerHeight', '6');
-          arrowMarker.setAttribute('orient', 'auto');
-          
-          const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          arrowPath.setAttribute('d', 'M0,0 L0,6 L9,3 z');
-          arrowPath.setAttribute('fill', '#475569');
-          arrowMarker.appendChild(arrowPath);
-          defs.appendChild(arrowMarker);
-          
-          line.setAttribute('marker-end', `url(#arrow-${node.id}-${connectionId})`);
-          
-          // Add animated flow effect
+          // Animate connections
           gsap.fromTo(line, 
-            { strokeDasharray: "10,10", strokeDashoffset: 20 },
-            { strokeDashoffset: 0, duration: 3, ease: "none", repeat: -1 }
+            { strokeDasharray: "5,5", strokeDashoffset: 10 },
+            { strokeDashoffset: 0, duration: 2, ease: "none", repeat: -1 }
           );
           
           svg.appendChild(line);
@@ -476,7 +631,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       });
     });
 
-    // Create repository nodes with enhanced interactions
+    // Create nodes
     nodeList.forEach((node, index) => {
       const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       nodeGroup.setAttribute('class', 'repo-node');
@@ -489,11 +644,14 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       circle.setAttribute('r', radius.toString());
       circle.setAttribute('fill', node.color);
       circle.setAttribute('stroke', '#1E293B');
-      circle.setAttribute('stroke-width', '4');
-      circle.style.filter = 'drop-shadow(0px 6px 20px rgba(0,0,0,0.5))';
+      circle.setAttribute('stroke-width', '3');
+      circle.style.filter = 'drop-shadow(0px 4px 12px rgba(0,0,0,0.4))';
 
-      // Add clickable indicator for expandable nodes
-      if (node.children !== undefined || ['src', 'components', 'hooks', 'services'].includes(node.id)) {
+      // Expandable indicator
+      const canExpand = node.children !== undefined || 
+                       ['src', 'components', 'hooks', 'services', 'components-dir'].includes(node.id);
+      
+      if (canExpand) {
         const expandIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         expandIndicator.setAttribute('r', '8');
         expandIndicator.setAttribute('cx', (radius - 8).toString());
@@ -515,21 +673,37 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         nodeGroup.appendChild(expandIcon);
       }
 
+      // Node label with proper text wrapping
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('dy', '0.35em');
       text.setAttribute('fill', 'white');
-      text.setAttribute('font-size', '12px');
-      text.setAttribute('font-weight', '700');
-      text.textContent = node.name.length > 10 ? node.name.slice(0, 8) + '...' : node.name;
+      text.setAttribute('font-size', '11px');
+      text.setAttribute('font-weight', '600');
+      
+      // Better text handling for file names
+      let displayName = node.name;
+      if (displayName.length > 12) {
+        if (displayName.includes('.')) {
+          const parts = displayName.split('.');
+          const extension = parts.pop();
+          const baseName = parts.join('.');
+          if (baseName.length > 8) {
+            displayName = baseName.slice(0, 8) + '...' + (extension ? '.' + extension : '');
+          }
+        } else {
+          displayName = displayName.slice(0, 10) + '...';
+        }
+      }
+      text.textContent = displayName;
 
-      // File count display
+      // File count or metadata
       if (node.metadata.fileCount) {
         const metaText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         metaText.setAttribute('text-anchor', 'middle');
         metaText.setAttribute('dy', (radius + 20).toString());
         metaText.setAttribute('fill', '#94A3B8');
-        metaText.setAttribute('font-size', '10px');
+        metaText.setAttribute('font-size', '9px');
         metaText.textContent = `${node.metadata.fileCount} files`;
         nodeGroup.appendChild(metaText);
       }
@@ -541,7 +715,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       // Enhanced interactions
       nodeGroup.addEventListener('mouseenter', () => {
         gsap.to(circle, {
-          scale: 1.2,
+          scale: 1.15,
           duration: 0.3,
           ease: "back.out(1.7)",
           transformOrigin: "center"
@@ -563,12 +737,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       gsap.fromTo(nodeGroup, {
         scale: 0,
         opacity: 0,
-        rotation: node.importance * 20
+        rotation: node.importance * 10
       }, {
         scale: 1,
         opacity: 1,
         rotation: 0,
-        duration: 1 + (index * 0.1),
+        duration: 0.8 + (index * 0.1),
         delay: index * 0.15,
         ease: "elastic.out(1, 0.5)",
         transformOrigin: "center"
