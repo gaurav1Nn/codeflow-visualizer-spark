@@ -3,7 +3,6 @@ import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Sphere, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { gsap } from 'gsap';
 
 interface NeuronProps {
   position: [number, number, number];
@@ -14,18 +13,6 @@ interface NeuronProps {
 
 const Neuron: React.FC<NeuronProps> = ({ position, isActive, size, color }) => {
   const sphereRef = useRef<THREE.Mesh>(null);
-
-  useEffect(() => {
-    if (sphereRef.current && isActive) {
-      gsap.to(sphereRef.current.scale, {
-        x: 1.5, y: 1.5, z: 1.5,
-        duration: 0.8,
-        yoyo: true,
-        repeat: -1,
-        ease: "power2.inOut"
-      });
-    }
-  }, [isActive]);
 
   useFrame(() => {
     if (sphereRef.current && isActive) {
@@ -53,23 +40,6 @@ const Synapse: React.FC<{
   end: [number, number, number]; 
   isActive: boolean; 
 }> = ({ start, end, isActive }) => {
-  const lineRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (lineRef.current && isActive) {
-      gsap.fromTo(lineRef.current.material, 
-        { opacity: 0.1 },
-        { 
-          opacity: 0.8, 
-          duration: 0.5, 
-          yoyo: true, 
-          repeat: -1,
-          ease: "power2.inOut" 
-        }
-      );
-    }
-  }, [isActive]);
-
   const points = React.useMemo(() => [
     new THREE.Vector3(...start),
     new THREE.Vector3(...end)
@@ -77,7 +47,6 @@ const Synapse: React.FC<{
 
   return (
     <Line
-      ref={lineRef}
       points={points}
       color={isActive ? "#00ff88" : "#444444"}
       lineWidth={isActive ? 3 : 1}
