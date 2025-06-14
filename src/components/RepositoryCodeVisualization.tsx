@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,24 +21,31 @@ import {
   Calendar,
   TrendingUp,
   Eye,
-  Download
+  Download,
+  ArrowLeft,
+  FolderOpen
 } from 'lucide-react';
 
 interface RepositoryNode {
   id: string;
   name: string;
-  type: 'repository' | 'component' | 'service' | 'config' | 'test' | 'asset' | 'documentation';
+  type: 'repository' | 'component' | 'service' | 'config' | 'test' | 'asset' | 'documentation' | 'file';
   size: number;
   importance: number;
   connections: string[];
   position: { x: number; y: number };
   color: string;
+  parent?: string;
+  children?: RepositoryNode[];
   metadata: {
     language?: string;
     fileCount?: number;
     lastModified?: string;
     contributors?: number;
     complexity?: 'low' | 'medium' | 'high';
+    extension?: string;
+    imports?: string[];
+    exports?: string[];
   };
 }
 
@@ -60,15 +66,24 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<RepositoryNode | null>(null);
   const [nodes, setNodes] = useState<RepositoryNode[]>([]);
+  const [currentLevel, setCurrentLevel] = useState<string>('root');
   const [viewMode, setViewMode] = useState<'structure' | 'complexity' | 'activity'>('structure');
+  const [breadcrumb, setBreadcrumb] = useState<string[]>(['Repository']);
 
   useEffect(() => {
     generateRepositoryStructure();
-  }, [repository, commits, contributors, viewMode]);
+  }, [repository, commits, contributors, viewMode, currentLevel]);
 
   const generateRepositoryStructure = () => {
+    if (currentLevel === 'root') {
+      generateRootStructure();
+    } else {
+      generateDrillDownStructure(currentLevel);
+    }
+  };
+
+  const generateRootStructure = () => {
     const repositoryNodes: RepositoryNode[] = [
-      // Main repository node
       {
         id: 'repo-root',
         name: repository.name,
@@ -86,7 +101,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'high'
         }
       },
-      // Source code structure
       {
         id: 'src',
         name: 'src/',
@@ -96,6 +110,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         connections: ['components', 'hooks', 'services', 'utils'],
         position: { x: 200, y: 100 },
         color: '#10B981',
+        children: [],
         metadata: {
           language: 'TypeScript',
           fileCount: 25,
@@ -103,7 +118,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'high'
         }
       },
-      // Components
       {
         id: 'components',
         name: 'Components',
@@ -113,6 +127,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         connections: ['ui-components', 'features'],
         position: { x: 100, y: 50 },
         color: '#8B5CF6',
+        parent: 'src',
         metadata: {
           language: 'TSX',
           fileCount: 15,
@@ -120,7 +135,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'medium'
         }
       },
-      // Hooks and logic
       {
         id: 'hooks',
         name: 'Hooks',
@@ -130,6 +144,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         connections: ['api-hooks', 'state-hooks'],
         position: { x: 300, y: 50 },
         color: '#F59E0B',
+        parent: 'src',
         metadata: {
           language: 'TypeScript',
           fileCount: 8,
@@ -137,7 +152,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'medium'
         }
       },
-      // Services
       {
         id: 'services',
         name: 'Services',
@@ -147,6 +161,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         connections: ['api', 'github-service'],
         position: { x: 150, y: 150 },
         color: '#EF4444',
+        parent: 'src',
         metadata: {
           language: 'TypeScript',
           fileCount: 5,
@@ -154,7 +169,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'high'
         }
       },
-      // Configuration
       {
         id: 'config',
         name: 'Config',
@@ -171,7 +185,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'low'
         }
       },
-      // Documentation
       {
         id: 'docs',
         name: 'Documentation',
@@ -188,7 +201,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           complexity: 'low'
         }
       },
-      // Tests
       {
         id: 'tests',
         name: 'Tests',
@@ -207,25 +219,177 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       }
     ];
 
-    // Adjust node sizes and colors based on view mode
-    if (viewMode === 'complexity') {
-      repositoryNodes.forEach(node => {
-        const complexityMultiplier = {
-          'low': 0.8,
-          'medium': 1,
-          'high': 1.3
-        };
-        node.size *= complexityMultiplier[node.metadata.complexity || 'medium'];
-      });
-    } else if (viewMode === 'activity') {
-      repositoryNodes.forEach(node => {
-        const activityMultiplier = (node.metadata.contributors || 1) / Math.max(1, contributors.length);
-        node.size *= (0.7 + activityMultiplier * 0.6);
-      });
-    }
-
     setNodes(repositoryNodes);
     renderVisualization(repositoryNodes);
+  };
+
+  const generateDrillDownStructure = (parentId: string) => {
+    let drillDownNodes: RepositoryNode[] = [];
+    
+    if (parentId === 'src') {
+      drillDownNodes = [
+        {
+          id: 'components-dir',
+          name: 'components/',
+          type: 'component',
+          size: 100,
+          importance: 9,
+          connections: ['GitHubIntegration.tsx', 'RepositoryDashboard.tsx', 'ui-folder'],
+          position: { x: 200, y: 150 },
+          color: '#8B5CF6',
+          metadata: {
+            language: 'TSX',
+            fileCount: 15,
+            complexity: 'high'
+          }
+        },
+        {
+          id: 'GitHubIntegration.tsx',
+          name: 'GitHubIntegration.tsx',
+          type: 'file',
+          size: 80,
+          importance: 8,
+          connections: ['useGitHubData.ts', 'RepositoryDashboard.tsx'],
+          position: { x: 100, y: 80 },
+          color: '#3B82F6',
+          parent: 'components-dir',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'high',
+            imports: ['useGitHubData', 'RepositoryDashboard', 'gsap'],
+            exports: ['GitHubIntegration']
+          }
+        },
+        {
+          id: 'RepositoryDashboard.tsx',
+          name: 'RepositoryDashboard.tsx',
+          type: 'file',
+          size: 85,
+          importance: 8,
+          connections: ['GitHubIntegration.tsx', 'KeyMetricsCards.tsx', 'ContributorAnalytics.tsx'],
+          position: { x: 300, y: 80 },
+          color: '#10B981',
+          parent: 'components-dir',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'high',
+            imports: ['KeyMetricsCards', 'ContributorAnalytics', 'gsap'],
+            exports: ['RepositoryDashboard']
+          }
+        },
+        {
+          id: 'hooks-dir',
+          name: 'hooks/',
+          type: 'service',
+          size: 70,
+          importance: 7,
+          connections: ['useGitHubData.ts', 'use-toast.ts'],
+          position: { x: 500, y: 150 },
+          color: '#F59E0B',
+          metadata: {
+            language: 'TypeScript',
+            fileCount: 3,
+            complexity: 'medium'
+          }
+        },
+        {
+          id: 'useGitHubData.ts',
+          name: 'useGitHubData.ts',
+          type: 'file',
+          size: 60,
+          importance: 7,
+          connections: ['GitHubIntegration.tsx', 'githubApi.ts'],
+          position: { x: 450, y: 80 },
+          color: '#EF4444',
+          parent: 'hooks-dir',
+          metadata: {
+            language: 'TypeScript',
+            extension: 'ts',
+            complexity: 'medium',
+            imports: ['githubApi', 'react-query'],
+            exports: ['useGitHubData']
+          }
+        },
+        {
+          id: 'services-dir',
+          name: 'services/',
+          type: 'service',
+          size: 65,
+          importance: 6,
+          connections: ['githubApi.ts'],
+          position: { x: 200, y: 250 },
+          color: '#EC4899',
+          metadata: {
+            language: 'TypeScript',
+            fileCount: 1,
+            complexity: 'medium'
+          }
+        },
+        {
+          id: 'githubApi.ts',
+          name: 'githubApi.ts',
+          type: 'file',
+          size: 55,
+          importance: 6,
+          connections: ['useGitHubData.ts'],
+          position: { x: 150, y: 320 },
+          color: '#F97316',
+          parent: 'services-dir',
+          metadata: {
+            language: 'TypeScript',
+            extension: 'ts',
+            complexity: 'medium',
+            imports: ['fetch', 'types'],
+            exports: ['githubApi', 'GitHubFileContent']
+          }
+        }
+      ];
+    }
+
+    setNodes(drillDownNodes);
+    renderVisualization(drillDownNodes);
+  };
+
+  const handleNodeClick = (node: RepositoryNode) => {
+    if (node.children !== undefined || ['src', 'components', 'hooks', 'services'].includes(node.id)) {
+      // Animate transition
+      gsap.to('.repo-node', {
+        scale: 0,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.in",
+        onComplete: () => {
+          setCurrentLevel(node.id);
+          setBreadcrumb([...breadcrumb, node.name]);
+        }
+      });
+    } else {
+      setSelectedNode(node);
+      gsap.to(`[data-node-id="${node.id}"]`, {
+        scale: 1.4,
+        duration: 0.2,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.inOut"
+      });
+    }
+  };
+
+  const handleBackNavigation = () => {
+    if (currentLevel !== 'root') {
+      gsap.to('.repo-node', {
+        scale: 0,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.in",
+        onComplete: () => {
+          setCurrentLevel('root');
+          setBreadcrumb(['Repository']);
+        }
+      });
+    }
   };
 
   const renderVisualization = (nodeList: RepositoryNode[]) => {
@@ -268,7 +432,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     backgroundRect.setAttribute('fill', 'url(#grid)');
     svg.appendChild(backgroundRect);
 
-    // Create connections with animated flow
+    // Create animated connections with import/export relationships
     nodeList.forEach((node) => {
       node.connections.forEach((connectionId) => {
         const targetNode = nodeList.find(n => n.id === connectionId);
@@ -283,6 +447,24 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           line.setAttribute('opacity', '0.4');
           line.setAttribute('class', 'connection-line');
           
+          // Add directional arrow for imports/exports
+          const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+          arrowMarker.setAttribute('id', `arrow-${node.id}-${connectionId}`);
+          arrowMarker.setAttribute('viewBox', '0 0 10 10');
+          arrowMarker.setAttribute('refX', '5');
+          arrowMarker.setAttribute('refY', '3');
+          arrowMarker.setAttribute('markerWidth', '6');
+          arrowMarker.setAttribute('markerHeight', '6');
+          arrowMarker.setAttribute('orient', 'auto');
+          
+          const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          arrowPath.setAttribute('d', 'M0,0 L0,6 L9,3 z');
+          arrowPath.setAttribute('fill', '#475569');
+          arrowMarker.appendChild(arrowPath);
+          defs.appendChild(arrowMarker);
+          
+          line.setAttribute('marker-end', `url(#arrow-${node.id}-${connectionId})`);
+          
           // Add animated flow effect
           gsap.fromTo(line, 
             { strokeDasharray: "10,10", strokeDashoffset: 20 },
@@ -294,14 +476,14 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       });
     });
 
-    // Create repository nodes
+    // Create repository nodes with enhanced interactions
     nodeList.forEach((node, index) => {
       const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       nodeGroup.setAttribute('class', 'repo-node');
+      nodeGroup.setAttribute('data-node-id', node.id);
       nodeGroup.setAttribute('transform', `translate(${node.position.x}, ${node.position.y})`);
       nodeGroup.style.cursor = 'pointer';
 
-      // Create main circle with repository-specific styling
       const radius = Math.max(25, node.size / 3);
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('r', radius.toString());
@@ -310,16 +492,29 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       circle.setAttribute('stroke-width', '4');
       circle.style.filter = 'drop-shadow(0px 6px 20px rgba(0,0,0,0.5))';
 
-      // Create importance indicator ring
-      const importanceRing = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      importanceRing.setAttribute('r', (radius + 8).toString());
-      importanceRing.setAttribute('fill', 'none');
-      importanceRing.setAttribute('stroke', node.color);
-      importanceRing.setAttribute('stroke-width', Math.max(2, node.importance / 3).toString());
-      importanceRing.setAttribute('opacity', '0.3');
-      importanceRing.setAttribute('stroke-dasharray', `${node.importance * 5},5`);
+      // Add clickable indicator for expandable nodes
+      if (node.children !== undefined || ['src', 'components', 'hooks', 'services'].includes(node.id)) {
+        const expandIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        expandIndicator.setAttribute('r', '8');
+        expandIndicator.setAttribute('cx', (radius - 8).toString());
+        expandIndicator.setAttribute('cy', (-radius + 8).toString());
+        expandIndicator.setAttribute('fill', '#10B981');
+        expandIndicator.setAttribute('stroke', 'white');
+        expandIndicator.setAttribute('stroke-width', '2');
+        
+        const expandIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        expandIcon.setAttribute('x', (radius - 8).toString());
+        expandIcon.setAttribute('y', (-radius + 12).toString());
+        expandIcon.setAttribute('text-anchor', 'middle');
+        expandIcon.setAttribute('fill', 'white');
+        expandIcon.setAttribute('font-size', '10px');
+        expandIcon.setAttribute('font-weight', 'bold');
+        expandIcon.textContent = '+';
+        
+        nodeGroup.appendChild(expandIndicator);
+        nodeGroup.appendChild(expandIcon);
+      }
 
-      // Create text label
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('dy', '0.35em');
@@ -328,16 +523,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       text.setAttribute('font-weight', '700');
       text.textContent = node.name.length > 10 ? node.name.slice(0, 8) + '...' : node.name;
 
-      // Create type indicator with icon
-      const typeIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      typeIndicator.setAttribute('r', '6');
-      typeIndicator.setAttribute('cx', (radius - 8).toString());
-      typeIndicator.setAttribute('cy', (-radius + 8).toString());
-      typeIndicator.setAttribute('fill', getTypeColor(node.type));
-      typeIndicator.setAttribute('stroke', 'white');
-      typeIndicator.setAttribute('stroke-width', '2');
-
-      // Metadata display
+      // File count display
       if (node.metadata.fileCount) {
         const metaText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         metaText.setAttribute('text-anchor', 'middle');
@@ -348,33 +534,17 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         nodeGroup.appendChild(metaText);
       }
 
-      nodeGroup.appendChild(importanceRing);
       nodeGroup.appendChild(circle);
       nodeGroup.appendChild(text);
-      nodeGroup.appendChild(typeIndicator);
       svg.appendChild(nodeGroup);
 
       // Enhanced interactions
       nodeGroup.addEventListener('mouseenter', () => {
         gsap.to(circle, {
-          scale: 1.3,
+          scale: 1.2,
           duration: 0.3,
           ease: "back.out(1.7)",
           transformOrigin: "center"
-        });
-        
-        gsap.to(importanceRing, {
-          opacity: 0.8,
-          scale: 1.2,
-          duration: 0.3,
-          ease: "power2.out",
-          transformOrigin: "center"
-        });
-
-        // Highlight connections
-        const connectedLines = svg.querySelectorAll('.connection-line');
-        connectedLines.forEach(line => {
-          gsap.to(line, { opacity: 0.1, duration: 0.2 });
         });
       });
 
@@ -385,35 +555,11 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           ease: "power2.out",
           transformOrigin: "center"
         });
-        
-        gsap.to(importanceRing, {
-          opacity: 0.3,
-          scale: 1,
-          duration: 0.3,
-          ease: "power2.out",
-          transformOrigin: "center"
-        });
-
-        const connectedLines = svg.querySelectorAll('.connection-line');
-        connectedLines.forEach(line => {
-          gsap.to(line, { opacity: 0.4, duration: 0.2 });
-        });
       });
 
-      nodeGroup.addEventListener('click', () => {
-        setSelectedNode(node);
-        
-        gsap.to(circle, {
-          scale: 1.4,
-          duration: 0.2,
-          yoyo: true,
-          repeat: 1,
-          ease: "power2.inOut",
-          transformOrigin: "center"
-        });
-      });
+      nodeGroup.addEventListener('click', () => handleNodeClick(node));
 
-      // Repository-specific entrance animation
+      // Entrance animation
       gsap.fromTo(nodeGroup, {
         scale: 0,
         opacity: 0,
@@ -427,14 +573,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         ease: "elastic.out(1, 0.5)",
         transformOrigin: "center"
       });
-
-      // Repository activity pulse
-      gsap.to(importanceRing, {
-        strokeDashoffset: -50,
-        duration: 4 + (node.importance * 0.2),
-        repeat: -1,
-        ease: "none"
-      });
     });
   };
 
@@ -446,7 +584,8 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       'config': '#6B7280',
       'test': '#F97316',
       'asset': '#84CC16',
-      'documentation': '#8B5CF6'
+      'documentation': '#8B5CF6',
+      'file': '#CBD5E1'
     };
     return colors[type as keyof typeof colors] || '#6B7280';
   };
@@ -459,7 +598,8 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
       'config': <Settings className="w-4 h-4" />,
       'test': <Target className="w-4 h-4" />,
       'asset': <Package className="w-4 h-4" />,
-      'documentation': <FileText className="w-4 h-4" />
+      'documentation': <FileText className="w-4 h-4" />,
+      'file': <FileText className="w-4 h-4" />
     };
     return icons[type as keyof typeof icons] || <Activity className="w-4 h-4" />;
   };
@@ -471,15 +611,38 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2 text-white">
-                <Network className="w-5 h-5 text-blue-400" />
-                <span>Repository Architecture</span>
-                <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
-                  {repository.name}
-                </Badge>
-              </CardTitle>
+              <div className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Network className="w-5 h-5 text-blue-400" />
+                  <span>Repository Architecture</span>
+                </CardTitle>
+                
+                {/* Breadcrumb Navigation */}
+                <div className="flex items-center space-x-2 text-sm">
+                  {breadcrumb.map((crumb, index) => (
+                    <React.Fragment key={index}>
+                      {index > 0 && <span className="text-slate-500">/</span>}
+                      <span className={index === breadcrumb.length - 1 ? "text-blue-300" : "text-slate-400"}>
+                        {crumb}
+                      </span>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
               
               <div className="flex items-center space-x-2">
+                {currentLevel !== 'root' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBackNavigation}
+                    className="text-slate-300 hover:text-white"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back
+                  </Button>
+                )}
+                
                 {(['structure', 'complexity', 'activity'] as const).map((mode) => (
                   <Button
                     key={mode}
@@ -514,33 +677,15 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
         {/* Repository Overview */}
         <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
           <CardHeader className="pb-3">
-            <CardTitle className="text-white text-sm">Repository Stats</CardTitle>
+            <CardTitle className="text-white text-sm">Current Level</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center space-x-2">
-                <Star className="w-3 h-3 text-yellow-400" />
-                <span className="text-slate-300">{repository.stargazers_count}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <GitFork className="w-3 h-3 text-green-400" />
-                <span className="text-slate-300">{repository.forks_count}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-3 h-3 text-blue-400" />
-                <span className="text-slate-300">{contributors.length}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <GitBranch className="w-3 h-3 text-purple-400" />
-                <span className="text-slate-300">{branches.length}</span>
-              </div>
+            <div className="flex items-center space-x-2">
+              <FolderOpen className="w-4 h-4 text-blue-400" />
+              <span className="text-white font-medium">{breadcrumb[breadcrumb.length - 1]}</span>
             </div>
-            
-            <div className="pt-2 border-t border-slate-600/50">
-              <div className="flex items-center space-x-2 text-xs">
-                <Calendar className="w-3 h-3 text-slate-400" />
-                <span className="text-slate-400">Updated {new Date(repository.updated_at).toLocaleDateString()}</span>
-              </div>
+            <div className="text-xs text-slate-400">
+              Click on nodes with + indicators to explore deeper into the structure
             </div>
           </CardContent>
         </Card>
@@ -575,58 +720,28 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
                     </div>
                   )}
                   
-                  {selectedNode.metadata.fileCount && (
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Files:</span>
-                      <span className="text-slate-200">{selectedNode.metadata.fileCount}</span>
+                  {selectedNode.metadata.imports && (
+                    <div className="pt-2 border-t border-slate-600/50">
+                      <h4 className="text-slate-300 font-medium text-xs mb-2">Imports:</h4>
+                      <div className="space-y-1">
+                        {selectedNode.metadata.imports.slice(0, 3).map((imp, index) => (
+                          <div key={index} className="text-xs text-slate-400">• {imp}</div>
+                        ))}
+                      </div>
                     </div>
                   )}
                   
-                  {selectedNode.metadata.contributors && (
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Contributors:</span>
-                      <span className="text-slate-200">{selectedNode.metadata.contributors}</span>
+                  {selectedNode.metadata.exports && (
+                    <div className="pt-2 border-t border-slate-600/50">
+                      <h4 className="text-slate-300 font-medium text-xs mb-2">Exports:</h4>
+                      <div className="space-y-1">
+                        {selectedNode.metadata.exports.slice(0, 3).map((exp, index) => (
+                          <div key={index} className="text-xs text-slate-400">• {exp}</div>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Importance:</span>
-                    <div className="flex items-center space-x-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div 
-                          key={i}
-                          className={`w-2 h-2 rounded-full ${
-                            i < selectedNode.importance / 2 ? 'bg-yellow-400' : 'bg-slate-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
                 </div>
-
-                {selectedNode.connections.length > 0 && (
-                  <div className="pt-2 border-t border-slate-600/50">
-                    <h4 className="text-slate-300 font-medium text-xs mb-2">Connected to:</h4>
-                    <div className="space-y-1">
-                      {selectedNode.connections.slice(0, 3).map((connectionId) => {
-                        const connectedNode = nodes.find(n => n.id === connectionId);
-                        return connectedNode ? (
-                          <div key={connectionId} className="flex items-center space-x-2 text-xs">
-                            <div style={{ color: connectedNode.color }}>
-                              {getTypeIcon(connectedNode.type)}
-                            </div>
-                            <span className="text-slate-400">{connectedNode.name}</span>
-                          </div>
-                        ) : null;
-                      })}
-                      {selectedNode.connections.length > 3 && (
-                        <div className="text-slate-500 text-xs">
-                          +{selectedNode.connections.length - 3} more
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="text-center py-4">
