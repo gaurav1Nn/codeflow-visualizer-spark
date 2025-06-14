@@ -4,102 +4,59 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-const VortexParticles: React.FC<{ count: number; radius: number; isActive: boolean }> = ({ 
-  count, 
-  radius, 
-  isActive 
-}) => {
+interface VortexProps {
+  count: number;
+  intensity: number;
+  isActive: boolean;
+}
+
+const VortexPoints: React.FC<VortexProps> = ({ count, intensity, isActive }) => {
   const pointsRef = useRef<THREE.Points>(null);
   
   const particlesPosition = useMemo(() => {
     const positions = new Float32Array(count * 3);
-    const scales = new Float32Array(count);
-    
     for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      const spiralRadius = (i / count) * radius;
-      const angle = (i / count) * Math.PI * 10;
+      const radius = Math.random() * 5;
+      const angle = (i / count) * Math.PI * 2;
+      const height = (Math.random() - 0.5) * 8;
       
-      positions[i3] = Math.cos(angle) * spiralRadius;
-      positions[i3 + 1] = (i / count - 0.5) * 10;
-      positions[i3 + 2] = Math.sin(angle) * spiralRadius;
-      
-      scales[i] = Math.random() * 0.5 + 0.5;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = height;
+      positions[i * 3 + 2] = Math.sin(angle) * radius;
     }
-    
-    return { positions, scales };
-  }, [count, radius]);
+    return positions;
+  }, [count]);
 
   useFrame(({ clock }) => {
     if (!pointsRef.current || !isActive) return;
     
     const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
-    const time = clock.getElapsedTime();
     
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      const progress = (i / count);
-      const spiralRadius = progress * radius * (1 - progress * 0.8);
-      const angle = progress * Math.PI * 10 + time * 2;
-      const height = (progress - 0.5) * 10;
+      const time = clock.getElapsedTime() * intensity;
+      const angle = time + (i / count) * Math.PI * 2;
+      const radius = 3 + Math.sin(time + i * 0.1) * 2;
       
-      // Spiral inward motion
-      positions[i3] = Math.cos(angle) * spiralRadius;
-      positions[i3 + 1] = height - time * 0.5;
-      positions[i3 + 2] = Math.sin(angle) * spiralRadius;
-      
-      // Reset particles that reach the center
-      if (spiralRadius < 0.1 || positions[i3 + 1] < -6) {
-        const resetRadius = radius;
-        const resetAngle = Math.random() * Math.PI * 2;
-        positions[i3] = Math.cos(resetAngle) * resetRadius;
-        positions[i3 + 1] = 5;
-        positions[i3 + 2] = Math.sin(resetAngle) * resetRadius;
-      }
+      positions[i3] = Math.cos(angle) * radius;
+      positions[i3 + 2] = Math.sin(angle) * radius;
+      positions[i3 + 1] += Math.sin(time + i * 0.1) * 0.02;
     }
     
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
   });
 
   return (
-    <Points ref={pointsRef} positions={particlesPosition.positions} stride={3}>
+    <Points ref={pointsRef} positions={particlesPosition} stride={3} frustumCulled={false}>
       <PointMaterial
         transparent
-        color="#00ff88"
+        color="#3B82F6"
         size={0.05}
         sizeAttenuation={true}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
     </Points>
-  );
-};
-
-const CentralCore: React.FC<{ isActive: boolean }> = ({ isActive }) => {
-  const sphereRef = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }) => {
-    if (sphereRef.current) {
-      sphereRef.current.rotation.x = clock.getElapsedTime() * 0.5;
-      sphereRef.current.rotation.y = clock.getElapsedTime() * 0.3;
-      
-      if (isActive) {
-        const scale = 1 + Math.sin(clock.getElapsedTime() * 3) * 0.2;
-        sphereRef.current.scale.setScalar(scale);
-      }
-    }
-  });
-
-  return (
-    <mesh ref={sphereRef} position={[0, 0, 0]}>
-      <sphereGeometry args={[0.5, 32, 32]} />
-      <meshStandardMaterial 
-        color="#ff0088" 
-        emissive="#440022"
-        transparent 
-        opacity={0.8}
-      />
-    </mesh>
   );
 };
 
@@ -111,26 +68,18 @@ export const DataVortex3D: React.FC<{
   return (
     <div className={`w-full h-full ${className}`}>
       <Canvas
-        camera={{ position: [0, 3, 8], fov: 75 }}
+        camera={{ position: [0, 0, 8], fov: 75 }}
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.3} />
-        <pointLight position={[0, 0, 0]} intensity={1} color="#ff0088" />
-        <pointLight position={[0, 5, 5]} intensity={0.5} color="#0088ff" />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[0, 5, 5]} intensity={0.6} />
         
-        <CentralCore isActive={isActive} />
-        
-        <VortexParticles 
-          count={100 * intensity} 
-          radius={4} 
-          isActive={isActive} 
-        />
-        
-        <VortexParticles 
-          count={50 * intensity} 
-          radius={6} 
-          isActive={isActive} 
-        />
+        {isActive && (
+          <>
+            <VortexPoints count={100} intensity={intensity} isActive={isActive} />
+            <VortexPoints count={50} intensity={intensity * 0.8} isActive={isActive} />
+          </>
+        )}
       </Canvas>
     </div>
   );

@@ -31,29 +31,25 @@ export const Enhanced3DVisualization: React.FC<{
       id: 'particles',
       name: 'Code Flow',
       icon: Zap,
-      description: 'Particle trails showing code execution flow',
-      component: CodeFlowParticles
+      description: 'Particle trails showing code execution flow'
     },
     {
       id: 'tree',
       name: '3D Repository',
       icon: Network,
-      description: 'Interactive 3D repository structure',
-      component: Repository3DTree
+      description: 'Interactive 3D repository structure'
     },
     {
       id: 'neural',
       name: 'Neural Network',
       icon: Brain,
-      description: 'AI processing visualization',
-      component: NeuralNetworkViz
+      description: 'AI processing visualization'
     },
     {
       id: 'vortex',
       name: 'Data Vortex',
       icon: Orbit,
-      description: 'Data flow spiral visualization',
-      component: DataVortex3D
+      description: 'Data flow spiral visualization'
     }
   ];
 
@@ -67,20 +63,15 @@ export const Enhanced3DVisualization: React.FC<{
   };
 
   const renderVisualization = () => {
-    const activeViz = visualizations.find(viz => viz.id === activeTab);
-    if (!activeViz) return null;
-
-    const Component = activeViz.component;
-    
     switch (activeTab) {
       case 'particles':
-        return <Component isActive={isPlaying} className="h-[500px]" />;
+        return <CodeFlowParticles isActive={isPlaying} className="h-[500px]" />;
       case 'tree':
-        return <Component repositoryData={repositoryData} className="h-[500px]" />;
+        return <Repository3DTree repositoryData={repositoryData} className="h-[500px]" />;
       case 'neural':
-        return <Component isProcessing={isPlaying} className="h-[500px]" />;
+        return <NeuralNetworkViz isProcessing={isPlaying} className="h-[500px]" />;
       case 'vortex':
-        return <Component isActive={isPlaying} intensity={intensity} className="h-[500px]" />;
+        return <DataVortex3D isActive={isPlaying} intensity={intensity} className="h-[500px]" />;
       default:
         return null;
     }
