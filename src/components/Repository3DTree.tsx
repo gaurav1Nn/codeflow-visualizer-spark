@@ -46,7 +46,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ position, type, isActive }) => {
 export const Repository3DTree: React.FC<{
   repositoryData?: any;
   className?: string;
-}> = ({ repositoryData, className = '' }) => {
+}> = ({ className = '' }) => {
   const nodes = useMemo(() => [
     { position: [0, 2, 0] as [number, number, number], type: 'folder' as const, name: 'src', isActive: true },
     { position: [-1, 1, 0] as [number, number, number], type: 'folder' as const, name: 'components', isActive: false },
@@ -55,7 +55,7 @@ export const Repository3DTree: React.FC<{
     { position: [-0.5, 0, 0] as [number, number, number], type: 'file' as const, name: 'Index.tsx', isActive: false },
     { position: [0.5, 0, 0] as [number, number, number], type: 'file' as const, name: 'App.tsx', isActive: true },
     { position: [1.5, 0, 0] as [number, number, number], type: 'file' as const, name: 'main.tsx', isActive: false },
-  ], [repositoryData]);
+  ], []);
 
   const connections = useMemo(() => [
     { start: [0, 2, 0] as [number, number, number], end: [-1, 1, 0] as [number, number, number] },

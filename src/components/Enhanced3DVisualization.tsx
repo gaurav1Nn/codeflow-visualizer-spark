@@ -63,17 +63,30 @@ export const Enhanced3DVisualization: React.FC<{
   };
 
   const renderVisualization = () => {
-    switch (activeTab) {
-      case 'particles':
-        return <CodeFlowParticles isActive={isPlaying} className="h-[500px]" />;
-      case 'tree':
-        return <Repository3DTree repositoryData={repositoryData} className="h-[500px]" />;
-      case 'neural':
-        return <NeuralNetworkViz isProcessing={isPlaying} className="h-[500px]" />;
-      case 'vortex':
-        return <DataVortex3D isActive={isPlaying} intensity={intensity} className="h-[500px]" />;
-      default:
-        return null;
+    try {
+      switch (activeTab) {
+        case 'particles':
+          return <CodeFlowParticles isActive={isPlaying} className="h-[500px]" />;
+        case 'tree':
+          return <Repository3DTree repositoryData={repositoryData} className="h-[500px]" />;
+        case 'neural':
+          return <NeuralNetworkViz isProcessing={isPlaying} className="h-[500px]" />;
+        case 'vortex':
+          return <DataVortex3D isActive={isPlaying} intensity={intensity} className="h-[500px]" />;
+        default:
+          return (
+            <div className="h-[500px] flex items-center justify-center">
+              <p className="text-slate-400">Select a visualization</p>
+            </div>
+          );
+      }
+    } catch (error) {
+      console.error('Visualization error:', error);
+      return (
+        <div className="h-[500px] flex items-center justify-center">
+          <p className="text-red-400">Error loading visualization</p>
+        </div>
+      );
     }
   };
 
