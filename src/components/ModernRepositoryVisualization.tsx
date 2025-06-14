@@ -22,6 +22,7 @@ import {
   Activity
 } from 'lucide-react';
 import { repositoryAnalyzer, FileNode, DependencyConnection, RepositoryStructure } from '@/services/repositoryAnalyzer';
+import { githubApi } from '@/services/githubApi';
 
 interface ModernRepositoryVisualizationProps {
   repository: any;
@@ -46,6 +47,8 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   const [selectedNode, setSelectedNode] = useState<FileNode | null>(null);
   const [breadcrumb, setBreadcrumb] = useState<string[]>(['Repository']);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [currentNodes, setCurrentNodes] = useState<FileNode[]>([]);
+  const [isLoadingSubdir, setIsLoadingSubdir] = useState(false);
 
   const analyzeRepositoryStructure = useCallback(async () => {
     if (!repository) return;
@@ -55,11 +58,63 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       const [owner, repo] = repository.full_name.split('/');
       const structure = await repositoryAnalyzer.analyzeRepository(owner, repo);
       setRepositoryStructure(structure);
+      setCurrentNodes(structure.nodes.filter(node => !node.path.includes('/') || node.depth === 0));
       console.log('Repository structure analyzed:', structure);
     } catch (error) {
       console.error('Failed to analyze repository:', error);
     } finally {
       setIsAnalyzing(false);
+    }
+  }, [repository]);
+
+  const loadSubdirectory = useCallback(async (dirPath: string) => {
+    if (!repository) return;
+    
+    setIsLoadingSubdir(true);
+    try {
+      const [owner, repo] = repository.full_name.split('/');
+      const contents = await githubApi.getRepositoryContents(owner, repo, dirPath);
+      
+      if (Array.isArray(contents)) {
+        const newNodes: FileNode[] = contents.map(item => {
+          const fileExtension = item.name.includes('.') ? item.name.substring(item.name.lastIndexOf('.')) : null;
+          const fileExtensionMap: Record<string, string> = {
+            '.ts': 'TypeScript',
+            '.tsx': 'TSX',
+            '.js': 'JavaScript',
+            '.jsx': 'JSX',
+            '.py': 'Python',
+            '.java': 'Java',
+            '.css': 'CSS',
+            '.scss': 'SCSS',
+            '.html': 'HTML',
+            '.json': 'JSON',
+            '.md': 'Markdown',
+            '.yml': 'YAML',
+            '.yaml': 'YAML'
+          };
+          const language = fileExtension ? fileExtensionMap[fileExtension] : undefined;
+          
+          return {
+            id: item.path,
+            name: item.name,
+            path: item.path,
+            type: item.type === 'dir' ? 'directory' : 'file',
+            size: item.size || 0,
+            extension: fileExtension,
+            language,
+            depth: dirPath.split('/').filter(p => p).length + 1,
+            complexity: item.size && item.size > 5000 ? 'high' : item.size && item.size > 1000 ? 'medium' : 'low',
+            parent: dirPath || undefined
+          } as FileNode;
+        });
+        
+        setCurrentNodes(newNodes);
+      }
+    } catch (error) {
+      console.error('Failed to load subdirectory:', error);
+    } finally {
+      setIsLoadingSubdir(false);
     }
   }, [repository]);
 
@@ -70,26 +125,13 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   }, [repository, analyzeRepositoryStructure, repositoryStructure]);
 
   useEffect(() => {
-    if (repositoryStructure) {
+    if (currentNodes.length > 0) {
       renderVisualization();
     }
-  }, [repositoryStructure, currentPath, viewMode, searchTerm]);
+  }, [currentNodes, viewMode, searchTerm]);
 
   const getVisibleNodes = (): FileNode[] => {
-    if (!repositoryStructure) return [];
-    
-    let nodes = repositoryStructure.nodes;
-    
-    // Filter by current path
-    if (currentPath) {
-      nodes = nodes.filter(node => 
-        node.path.startsWith(currentPath) && 
-        node.path !== currentPath &&
-        node.path.split('/').length === currentPath.split('/').length + 1
-      );
-    } else {
-      nodes = nodes.filter(node => !node.path.includes('/') || node.depth === 0);
-    }
+    let nodes = currentNodes;
     
     // Filter by search term
     if (searchTerm) {
@@ -117,7 +159,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         return '#10B981';
       
       case 'activity':
-        // Color based on file type for now
         return node.type === 'directory' ? '#8B5CF6' : '#3B82F6';
       
       default:
@@ -150,7 +191,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   };
 
   const renderVisualization = () => {
-    if (!svgRef.current || !repositoryStructure) return;
+    if (!svgRef.current) return;
 
     const svg = svgRef.current;
     const visibleNodes = getVisibleNodes();
@@ -221,11 +262,11 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     background.setAttribute('fill', 'url(#backgroundGradient)');
     svg.appendChild(background);
 
-    // Calculate positions using force simulation algorithm
+    // Calculate positions using circular layout
     const positions = calculateNodePositions(visibleNodes, width, height);
 
     // Render connections first (behind nodes)
-    if (viewMode === 'dependencies') {
+    if (viewMode === 'dependencies' && repositoryStructure) {
       renderConnections(svg, visibleNodes, positions);
     }
 
@@ -249,7 +290,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       circle.setAttribute('stroke', 'rgba(255,255,255,0.2)');
       circle.setAttribute('stroke-width', '2');
       circle.setAttribute('filter', 'url(#glow)');
-      circle.style.backdropFilter = 'blur(10px)';
 
       // Icon based on file type
       const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -273,16 +313,27 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       }
       label.textContent = displayName;
 
-      // Metadata
-      if (viewMode === 'complexity' && node.complexity) {
-        const complexityBadge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        complexityBadge.setAttribute('cx', (size / 2 - 5).toString());
-        complexityBadge.setAttribute('cy', (-size / 2 + 5).toString());
-        complexityBadge.setAttribute('r', '6');
-        complexityBadge.setAttribute('fill', color);
-        complexityBadge.setAttribute('stroke', 'white');
-        complexityBadge.setAttribute('stroke-width', '2');
-        nodeGroup.appendChild(complexityBadge);
+      // Expandable indicator for directories
+      if (node.type === 'directory') {
+        const expandIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        expandIndicator.setAttribute('cx', (size / 2 - 8).toString());
+        expandIndicator.setAttribute('cy', (-size / 2 + 8).toString());
+        expandIndicator.setAttribute('r', '6');
+        expandIndicator.setAttribute('fill', '#10B981');
+        expandIndicator.setAttribute('stroke', 'white');
+        expandIndicator.setAttribute('stroke-width', '2');
+        
+        const expandIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        expandIcon.setAttribute('x', (size / 2 - 8).toString());
+        expandIcon.setAttribute('y', (-size / 2 + 12).toString());
+        expandIcon.setAttribute('text-anchor', 'middle');
+        expandIcon.setAttribute('fill', 'white');
+        expandIcon.setAttribute('font-size', '10px');
+        expandIcon.setAttribute('font-weight', 'bold');
+        expandIcon.textContent = '+';
+        
+        nodeGroup.appendChild(expandIndicator);
+        nodeGroup.appendChild(expandIcon);
       }
 
       nodeGroup.appendChild(circle);
@@ -329,7 +380,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   };
 
   const calculateNodePositions = (nodes: FileNode[], width: number, height: number) => {
-    // Simple circular layout for now - can be enhanced with force simulation
     const positions = [];
     const centerX = width / 2;
     const centerY = height / 2;
@@ -385,6 +435,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     if (node.type === 'directory') {
       setCurrentPath(node.path);
       setBreadcrumb(prev => [...prev, node.name]);
+      loadSubdirectory(node.path);
     } else {
       setSelectedNode(node);
     }
@@ -397,6 +448,15 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       const newPath = pathParts.join('/');
       setCurrentPath(newPath);
       setBreadcrumb(prev => prev.slice(0, -1));
+      
+      if (newPath === '') {
+        // Back to root
+        if (repositoryStructure) {
+          setCurrentNodes(repositoryStructure.nodes.filter(node => !node.path.includes('/') || node.depth === 0));
+        }
+      } else {
+        loadSubdirectory(newPath);
+      }
     }
   };
 
@@ -555,12 +615,16 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         <div className="lg:col-span-3">
           <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
             <CardContent className="h-[600px] p-0 relative overflow-hidden">
-              {isAnalyzing ? (
+              {(isAnalyzing || isLoadingSubdir) ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900/50 to-blue-900/20">
                   <div className="text-center">
                     <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-white text-lg mb-2">Analyzing Repository Structure</p>
-                    <p className="text-slate-400 text-sm">Discovering files, dependencies, and relationships...</p>
+                    <p className="text-white text-lg mb-2">
+                      {isAnalyzing ? 'Analyzing Repository Structure' : 'Loading Directory Contents'}
+                    </p>
+                    <p className="text-slate-400 text-sm">
+                      {isAnalyzing ? 'Discovering files, dependencies, and relationships...' : 'Fetching files and folders...'}
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -593,6 +657,9 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
               <Badge variant="outline" className="text-xs">
                 {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)} View
               </Badge>
+              <div className="text-xs text-slate-400">
+                {currentNodes.length} items in current directory
+              </div>
             </CardContent>
           </Card>
 
@@ -622,6 +689,13 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
                     <span className="text-slate-200">{selectedNode.size} bytes</span>
                   </div>
                   
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Path:</span>
+                    <span className="text-slate-200 text-xs truncate" title={selectedNode.path}>
+                      {selectedNode.path}
+                    </span>
+                  </div>
+                  
                   {selectedNode.complexity && (
                     <div className="flex justify-between">
                       <span className="text-slate-400">Complexity:</span>
@@ -635,28 +709,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
                       >
                         {selectedNode.complexity}
                       </Badge>
-                    </div>
-                  )}
-                  
-                  {selectedNode.imports && selectedNode.imports.length > 0 && (
-                    <div className="pt-2 border-t border-slate-600/50">
-                      <h4 className="text-slate-300 font-medium text-xs mb-2">Imports ({selectedNode.imports.length}):</h4>
-                      <div className="space-y-1 max-h-20 overflow-y-auto">
-                        {selectedNode.imports.slice(0, 5).map((imp, index) => (
-                          <div key={index} className="text-xs text-slate-400 truncate">• {imp}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {selectedNode.exports && selectedNode.exports.length > 0 && (
-                    <div className="pt-2 border-t border-slate-600/50">
-                      <h4 className="text-slate-300 font-medium text-xs mb-2">Exports ({selectedNode.exports.length}):</h4>
-                      <div className="space-y-1 max-h-20 overflow-y-auto">
-                        {selectedNode.exports.slice(0, 5).map((exp, index) => (
-                          <div key={index} className="text-xs text-slate-400 truncate">• {exp}</div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
