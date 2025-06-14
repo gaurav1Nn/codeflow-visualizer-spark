@@ -9,6 +9,9 @@ import { Slider } from '@/components/ui/slider';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useGitHubData } from '@/hooks/useGitHubData';
+import { githubApi } from '@/services/githubApi';
+import { RepositoryStructure } from '@/components/RepositoryStructure';
+import { CodeArchitecture } from '@/components/CodeArchitecture';
 import { 
   GitBranch, 
   GitCommit, 
