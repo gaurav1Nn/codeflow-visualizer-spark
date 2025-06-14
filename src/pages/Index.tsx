@@ -151,6 +151,13 @@ const Index = () => {
         <FeaturesGrid />
       </div>
 
+      {/* New 3D Visualization Section */}
+      <div className="relative z-20 px-6 py-20">
+        <div className="container mx-auto max-w-7xl">
+          <Enhanced3DVisualization />
+        </div>
+      </div>
+
       {/* Main Content */}
       <div className="main-content relative z-10 px-6 pb-20">
         <div className="container mx-auto max-w-7xl">
