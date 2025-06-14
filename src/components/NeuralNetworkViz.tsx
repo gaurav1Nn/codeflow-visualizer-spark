@@ -29,7 +29,10 @@ const Neuron: React.FC<NeuronProps> = ({ position, isActive, size, color }) => {
 
   useFrame(() => {
     if (sphereRef.current && isActive) {
-      sphereRef.current.material.emissive.setHex(0x0088ff);
+      const material = sphereRef.current.material as THREE.MeshStandardMaterial;
+      if (material && material.emissive) {
+        material.emissive.setHex(0x0088ff);
+      }
     }
   });
 

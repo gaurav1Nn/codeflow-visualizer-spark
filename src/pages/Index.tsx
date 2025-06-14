@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Header } from '@/components/Header';
@@ -6,6 +5,7 @@ import { GitHubIntegration } from '@/components/GitHubIntegration';
 import { ProfessionalHero } from '@/components/ProfessionalHero';
 import { StatsSection } from '@/components/StatsSection';
 import { FeaturesGrid } from '@/components/FeaturesGrid';
+import { Enhanced3DVisualization } from '@/components/Enhanced3DVisualization';
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
