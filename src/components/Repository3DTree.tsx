@@ -45,26 +45,21 @@ const TreeNode: React.FC<TreeNodeProps> = ({ position, type, isActive }) => {
 };
 
 const ConnectionLine: React.FC<{ start: [number, number, number]; end: [number, number, number] }> = ({ start, end }) => {
-  const points = useMemo(() => {
-    const curve = new THREE.LineCurve3(
+  const geometry = useMemo(() => {
+    const points = [
       new THREE.Vector3(...start),
       new THREE.Vector3(...end)
-    );
-    return curve.getPoints(2);
+    ];
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    return geometry;
   }, [start, end]);
 
   return (
-    <line>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={points.length}
-          array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <lineBasicMaterial color="#64748B" transparent opacity={0.6} />
-    </line>
+    <primitive object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ 
+      color: "#64748B", 
+      transparent: true, 
+      opacity: 0.6 
+    }))} />
   );
 };
 
