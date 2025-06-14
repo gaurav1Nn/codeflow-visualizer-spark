@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
@@ -91,11 +90,13 @@ export const GitHubIntegration = () => {
 
   useEffect(() => {
     if (error) {
-      // Error shake animation
+      // Error shake animation - fix the array issue
       if (inputCardRef.current) {
         gsap.to(inputCardRef.current, {
-          x: [-10, 10, -10, 10, 0],
-          duration: 0.5,
+          x: -10,
+          duration: 0.1,
+          yoyo: true,
+          repeat: 3,
           ease: "power2.inOut"
         });
       }

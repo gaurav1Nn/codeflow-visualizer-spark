@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { CodeActivityCharts } from '@/components/dashboard/CodeActivityCharts';
 import { LanguageDistribution } from '@/components/dashboard/LanguageDistribution';
 import { FileTreeMap } from '@/components/dashboard/FileTreeMap';
 import { InteractiveFileExplorer } from '@/components/InteractiveFileExplorer';
-import { CodeVisualization } from '@/components/CodeVisualization';
+import { RepositoryCodeVisualization } from '@/components/RepositoryCodeVisualization';
 import { 
   GitBranch, 
   Users, 
@@ -206,11 +205,11 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
               <span>Structure</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="explorer" 
+              value="visualization" 
               className="flex items-center space-x-2 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-300 rounded-lg transition-all duration-300"
             >
               <Network className="w-4 h-4" />
-              <span>Explorer</span>
+              <span>Architecture</span>
             </TabsTrigger>
             <TabsTrigger 
               value="contributors" 
@@ -249,8 +248,13 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
           <FileTreeMap repository={repository} />
         </TabsContent>
 
-        <TabsContent value="explorer" className="space-y-6 mt-6">
-          <CodeVisualization repository={repository} files={[]} />
+        <TabsContent value="visualization" className="space-y-6 mt-6">
+          <RepositoryCodeVisualization 
+            repository={repository} 
+            commits={commits}
+            contributors={contributors}
+            branches={branches}
+          />
           <InteractiveFileExplorer files={[]} />
         </TabsContent>
 
