@@ -1,4 +1,3 @@
-
 import { githubApi, GitHubFileContent, GitHubRepository, GitHubCommit } from './githubApi';
 
 export interface FileNode {
@@ -92,7 +91,7 @@ class RepositoryAnalyzer {
         id: fullPath,
         name: item.name,
         path: fullPath,
-        type: item.type,
+        type: item.type === 'dir' ? 'directory' : 'file', // Fix the type mapping here
         size: item.size || 0,
         extension: fileExtension,
         language,
