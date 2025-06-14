@@ -223,7 +223,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     ];
 
     setNodes(repositoryNodes);
-    renderVisualization(repositoryNodes);
+    setTimeout(() => renderVisualization(repositoryNodes), 100);
   };
 
   const generateDrillDownStructure = (parentId: string) => {
@@ -237,7 +237,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           type: 'component',
           size: 100,
           importance: 9,
-          connections: ['GitHubIntegration', 'RepositoryDashboard', 'ui-folder'],
+          connections: ['GitHubIntegration-file', 'RepositoryDashboard-file', 'ui-folder'],
           position: { x: 200, y: 150 },
           color: '#8B5CF6',
           children: [],
@@ -248,48 +248,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'GitHubIntegration',
-          name: 'GitHubIntegration.tsx',
-          type: 'file',
-          size: 80,
-          importance: 8,
-          connections: ['useGitHubData', 'RepositoryDashboard'],
-          position: { x: 100, y: 80 },
-          color: '#3B82F6',
-          parent: 'components-dir',
-          metadata: {
-            language: 'TSX',
-            extension: 'tsx',
-            complexity: 'high',
-            imports: ['useGitHubData', 'RepositoryDashboard', 'gsap'],
-            exports: ['GitHubIntegration']
-          }
-        },
-        {
-          id: 'RepositoryDashboard',
-          name: 'RepositoryDashboard.tsx',
-          type: 'file',
-          size: 85,
-          importance: 8,
-          connections: ['KeyMetricsCards', 'ContributorAnalytics', 'CodeActivityCharts'],
-          position: { x: 300, y: 80 },
-          color: '#10B981',
-          parent: 'components-dir',
-          metadata: {
-            language: 'TSX',
-            extension: 'tsx',
-            complexity: 'high',
-            imports: ['KeyMetricsCards', 'ContributorAnalytics', 'gsap'],
-            exports: ['RepositoryDashboard']
-          }
-        },
-        {
           id: 'hooks-dir',
           name: 'hooks/',
           type: 'service',
           size: 70,
           importance: 7,
-          connections: ['useGitHubData', 'use-toast'],
+          connections: ['useGitHubData-file'],
           position: { x: 500, y: 150 },
           color: '#F59E0B',
           children: [],
@@ -300,12 +264,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'useGitHubData',
+          id: 'useGitHubData-file',
           name: 'useGitHubData.ts',
           type: 'file',
           size: 60,
           importance: 7,
-          connections: ['githubApi'],
+          connections: ['githubApi-file'],
           position: { x: 450, y: 80 },
           color: '#EF4444',
           parent: 'hooks-dir',
@@ -323,7 +287,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           type: 'service',
           size: 65,
           importance: 6,
-          connections: ['githubApi'],
+          connections: ['githubApi-file'],
           position: { x: 200, y: 250 },
           color: '#EC4899',
           children: [],
@@ -334,7 +298,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         },
         {
-          id: 'githubApi',
+          id: 'githubApi-file',
           name: 'githubApi.ts',
           type: 'file',
           size: 55,
@@ -352,7 +316,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
           }
         }
       ];
-    } else if (parentId === 'components') {
+    } else if (parentId === 'components' || parentId === 'components-dir') {
       drillDownNodes = [
         {
           id: 'GitHubIntegration-file',
@@ -472,12 +436,46 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
             imports: ['recharts', 'Avatar', 'Card'],
             exports: ['ContributorAnalytics']
           }
+        },
+        {
+          id: 'InteractiveFileExplorer-file',
+          name: 'InteractiveFileExplorer.tsx',
+          type: 'file',
+          size: 70,
+          importance: 7,
+          connections: ['gsap-lib', 'Card'],
+          position: { x: 500, y: 250 },
+          color: '#F59E0B',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'medium',
+            imports: ['gsap', 'Card', 'Button', 'Input'],
+            exports: ['InteractiveFileExplorer']
+          }
+        },
+        {
+          id: 'CodeArchitecture-file',
+          name: 'CodeArchitecture.tsx',
+          type: 'file',
+          size: 65,
+          importance: 6,
+          connections: ['Card', 'Badge'],
+          position: { x: 600, y: 250 },
+          color: '#EC4899',
+          metadata: {
+            language: 'TSX',
+            extension: 'tsx',
+            complexity: 'medium',
+            imports: ['Card', 'Badge', 'Button'],
+            exports: ['CodeArchitecture']
+          }
         }
       ];
     }
 
     setNodes(drillDownNodes);
-    renderVisualization(drillDownNodes);
+    setTimeout(() => renderVisualization(drillDownNodes), 100);
   };
 
   const handleNodeClick = (node: RepositoryNode) => {
@@ -485,37 +483,49 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     
     // Check if this node can be expanded
     const canExpand = node.children !== undefined || 
-                     ['src', 'components', 'hooks', 'services', 'components-dir'].includes(node.id);
+                     ['src', 'components', 'hooks', 'services', 'components-dir', 'hooks-dir', 'services-dir', 'ui-folder', 'dashboard-folder'].includes(node.id);
     
     if (canExpand) {
       console.log('Expanding node:', node.id);
       
-      // Animate transition out
-      gsap.to('.repo-node', {
-        scale: 0,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.in",
-        onComplete: () => {
-          console.log('Transition complete, setting level to:', node.id);
-          setCurrentLevel(node.id);
-          setBreadcrumb(prev => {
-            const newBreadcrumb = [...prev, node.name];
-            console.log('New breadcrumb:', newBreadcrumb);
-            return newBreadcrumb;
+      // Clear existing visualization before transition
+      if (svgRef.current) {
+        const existingNodes = svgRef.current.querySelectorAll('.repo-node');
+        if (existingNodes.length > 0) {
+          gsap.to(existingNodes, {
+            scale: 0,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power2.in",
+            onComplete: () => {
+              console.log('Transition complete, setting level to:', node.id);
+              setCurrentLevel(node.id);
+              setBreadcrumb(prev => {
+                const newBreadcrumb = [...prev, node.name];
+                console.log('New breadcrumb:', newBreadcrumb);
+                return newBreadcrumb;
+              });
+            }
           });
+        } else {
+          // No existing nodes, proceed immediately
+          setCurrentLevel(node.id);
+          setBreadcrumb(prev => [...prev, node.name]);
         }
-      });
+      }
     } else {
       // Just select the node for details
       setSelectedNode(node);
-      gsap.to(`[data-node-id="${node.id}"]`, {
-        scale: 1.4,
-        duration: 0.2,
-        yoyo: true,
-        repeat: 1,
-        ease: "power2.inOut"
-      });
+      const nodeElement = svgRef.current?.querySelector(`[data-node-id="${node.id}"]`);
+      if (nodeElement) {
+        gsap.to(nodeElement, {
+          scale: 1.4,
+          duration: 0.2,
+          yoyo: true,
+          repeat: 1,
+          ease: "power2.inOut"
+        });
+      }
     }
   };
 
@@ -523,31 +533,49 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     console.log('Back navigation clicked, current level:', currentLevel);
     
     if (currentLevel !== 'root') {
-      gsap.to('.repo-node', {
-        scale: 0,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.in",
-        onComplete: () => {
-          // Determine the parent level
-          let newLevel = 'root';
-          let newBreadcrumb = ['Repository'];
-          
-          if (currentLevel === 'components') {
-            newLevel = 'src';
-            newBreadcrumb = ['Repository', 'src/'];
+      const existingNodes = svgRef.current?.querySelectorAll('.repo-node');
+      if (existingNodes && existingNodes.length > 0) {
+        gsap.to(existingNodes, {
+          scale: 0,
+          opacity: 0,
+          duration: 0.5,
+          ease: "power2.in",
+          onComplete: () => {
+            // Determine the parent level
+            let newLevel = 'root';
+            let newBreadcrumb = ['Repository'];
+            
+            if (currentLevel === 'components' || currentLevel === 'components-dir') {
+              newLevel = 'src';
+              newBreadcrumb = ['Repository', 'src/'];
+            } else if (currentLevel === 'src') {
+              newLevel = 'root';
+              newBreadcrumb = ['Repository'];
+            }
+            
+            console.log('Setting new level:', newLevel);
+            setCurrentLevel(newLevel);
+            setBreadcrumb(newBreadcrumb);
           }
-          
-          console.log('Setting new level:', newLevel);
-          setCurrentLevel(newLevel);
-          setBreadcrumb(newBreadcrumb);
+        });
+      } else {
+        // No existing nodes, proceed immediately
+        let newLevel = 'root';
+        let newBreadcrumb = ['Repository'];
+        
+        if (currentLevel === 'components' || currentLevel === 'components-dir') {
+          newLevel = 'src';
+          newBreadcrumb = ['Repository', 'src/'];
         }
-      });
+        
+        setCurrentLevel(newLevel);
+        setBreadcrumb(newBreadcrumb);
+      }
     }
   };
 
   const renderVisualization = (nodeList: RepositoryNode[]) => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !nodeList.length) return;
 
     const svg = svgRef.current;
     const width = 800;
@@ -582,13 +610,6 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     defs.appendChild(pattern);
     svg.appendChild(defs);
 
-    // Background
-    const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    backgroundRect.setAttribute('width', '100%');
-    backgroundRect.setAttribute('height', '100%');
-    backgroundRect.setAttribute('fill', 'url(#grid)');
-    svg.appendChild(backgroundRect);
-
     // Create arrow marker for connections
     const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
     arrowMarker.setAttribute('id', 'arrowhead');
@@ -603,6 +624,15 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
     arrowPath.setAttribute('fill', '#64748B');
     arrowMarker.appendChild(arrowPath);
     defs.appendChild(arrowMarker);
+    
+    svg.appendChild(defs);
+
+    // Background
+    const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    backgroundRect.setAttribute('width', '100%');
+    backgroundRect.setAttribute('height', '100%');
+    backgroundRect.setAttribute('fill', 'url(#grid)');
+    svg.appendChild(backgroundRect);
 
     // Create connections with proper arrows
     nodeList.forEach((node) => {
@@ -649,7 +679,7 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
 
       // Expandable indicator
       const canExpand = node.children !== undefined || 
-                       ['src', 'components', 'hooks', 'services', 'components-dir'].includes(node.id);
+                       ['src', 'components', 'hooks', 'services', 'components-dir', 'hooks-dir', 'services-dir', 'ui-folder', 'dashboard-folder'].includes(node.id);
       
       if (canExpand) {
         const expandIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -794,12 +824,12 @@ export const RepositoryCodeVisualization: React.FC<RepositoryCodeVisualizationPr
                 {/* Breadcrumb Navigation */}
                 <div className="flex items-center space-x-2 text-sm">
                   {breadcrumb.map((crumb, index) => (
-                    <React.Fragment key={index}>
+                    <div key={index} className="flex items-center space-x-2">
                       {index > 0 && <span className="text-slate-500">/</span>}
                       <span className={index === breadcrumb.length - 1 ? "text-blue-300" : "text-slate-400"}>
                         {crumb}
                       </span>
-                    </React.Fragment>
+                    </div>
                   ))}
                 </div>
               </div>
