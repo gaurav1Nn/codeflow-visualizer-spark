@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Code2, Share, Download, Settings, Sparkles } from 'lucide-react';
+import { Code2, Share, Download, Settings, Sparkles, GitBranch } from 'lucide-react';
 
 export const Header = () => {
   const logoRef = useRef<HTMLDivElement>(null);
@@ -38,7 +38,7 @@ export const Header = () => {
               ref={logoRef}
               className="relative p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"
             >
-              <Code2 className="w-6 h-6 text-white" />
+              <GitBranch className="w-6 h-6 text-white" />
               <div 
                 ref={sparkleRef}
                 className="absolute -top-1 -right-1"
@@ -47,8 +47,8 @@ export const Header = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">CodeFlow Visualizer</h1>
-              <p className="text-xs text-slate-400">AI-Powered Code Architecture</p>
+              <h1 className="text-xl font-bold text-white">GitHub Visualizer</h1>
+              <p className="text-xs text-slate-400">Repository Analysis Tool</p>
             </div>
           </div>
 
@@ -76,13 +76,6 @@ export const Header = () => {
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-300"
-              >
-                <Settings className="w-4 h-4" />
               </Button>
             </div>
           </div>
