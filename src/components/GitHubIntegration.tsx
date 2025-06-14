@@ -6,58 +6,31 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { GitBranch, GitCommit, Users, FileText, TrendingUp, Download } from 'lucide-react';
-
-interface Commit {
-  id: string;
-  message: string;
-  author: string;
-  date: string;
-  changes: { additions: number; deletions: number };
-}
-
-interface Repository {
-  name: string;
-  commits: Commit[];
-  branches: string[];
-  stats: {
-    totalCommits: number;
-    contributors: number;
-    filesChanged: number;
-    linesAdded: number;
-  };
-}
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { useGitHubData } from '@/hooks/useGitHubData';
+import { 
+  GitBranch, 
+  GitCommit, 
+  Users, 
+  FileText, 
+  TrendingUp, 
+  Download, 
+  Star,
+  GitFork,
+  Calendar,
+  AlertCircle
+} from 'lucide-react';
 
 export const GitHubIntegration = () => {
   const [repoUrl, setRepoUrl] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [repository, setRepository] = useState<Repository | null>(null);
   const [timelinePosition, setTimelinePosition] = useState([0]);
-  const [selectedBranches, setSelectedBranches] = useState<string[]>(['main']);
+  const { data, isLoading, error, analyzeRepository, progress } = useGitHubData();
+  const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<HTMLDivElement>(null);
-
-  // Mock repository data
-  const mockRepo: Repository = {
-    name: 'awesome-project',
-    commits: [
-      { id: '1', message: 'Initial commit', author: 'John Doe', date: '2024-01-01', changes: { additions: 100, deletions: 0 } },
-      { id: '2', message: 'Add authentication system', author: 'Jane Smith', date: '2024-01-05', changes: { additions: 250, deletions: 10 } },
-      { id: '3', message: 'Implement user dashboard', author: 'Bob Wilson', date: '2024-01-10', changes: { additions: 180, deletions: 30 } },
-      { id: '4', message: 'Add real-time features', author: 'Alice Brown', date: '2024-01-15', changes: { additions: 320, deletions: 45 } },
-      { id: '5', message: 'Performance optimizations', author: 'Charlie Davis', date: '2024-01-20', changes: { additions: 85, deletions: 120 } },
-    ],
-    branches: ['main', 'feature/auth', 'feature/dashboard', 'hotfix/security'],
-    stats: {
-      totalCommits: 127,
-      contributors: 8,
-      filesChanged: 45,
-      linesAdded: 12450
-    }
-  };
 
   useEffect(() => {
-    if (repository) {
+    if (data.repository) {
       // Animate repository data appearance
       gsap.from('.repo-card', {
         y: 50,
@@ -75,39 +48,32 @@ export const GitHubIntegration = () => {
         stagger: 0.15,
         ease: 'back.out(1.7)'
       });
+
+      toast({
+        title: "Repository Analyzed Successfully!",
+        description: `${data.repository.name} has been analyzed with ${data.commits.length} commits.`,
+      });
     }
-  }, [repository]);
+  }, [data.repository, toast]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Analysis Failed",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   const handleAnalyzeRepo = async () => {
-    if (!repoUrl.trim()) return;
-
-    setIsLoading(true);
-    
-    // Loading animation
-    gsap.to('.analyze-btn', {
-      scale: 0.95,
-      duration: 0.1,
-      yoyo: true,
-      repeat: 1
-    });
-
-    // Simulate API call
-    setTimeout(() => {
-      setRepository(mockRepo);
-      setIsLoading(false);
-      
-      // Success animation
-      gsap.from(containerRef.current, {
-        scale: 0.9,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'back.out(1.7)'
-      });
-    }, 2000);
+    await analyzeRepository(repoUrl);
   };
 
   const renderCommitTimeline = () => {
-    const currentCommit = repository?.commits[timelinePosition[0]] || repository?.commits[0];
+    if (!data.commits.length) return null;
+    
+    const currentCommit = data.commits[timelinePosition[0]];
     
     return (
       <Card className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
@@ -115,6 +81,9 @@ export const GitHubIntegration = () => {
           <CardTitle className="flex items-center space-x-2 text-white">
             <GitCommit className="w-5 h-5 text-blue-400" />
             <span>Commit Timeline</span>
+            <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
+              {data.commits.length} commits
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -122,7 +91,7 @@ export const GitHubIntegration = () => {
             <Slider
               value={timelinePosition}
               onValueChange={setTimelinePosition}
-              max={repository?.commits.length ? repository.commits.length - 1 : 0}
+              max={data.commits.length - 1}
               step={1}
               className="w-full"
             />
@@ -130,26 +99,28 @@ export const GitHubIntegration = () => {
             {currentCommit && (
               <div className="timeline-item bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="text-white font-semibold">{currentCommit.message}</h4>
+                  <h4 className="text-white font-semibold">{currentCommit.commit.message}</h4>
                   <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
-                    {currentCommit.id}
+                    {currentCommit.sha.substring(0, 7)}
                   </Badge>
                 </div>
                 <p className="text-slate-300 text-sm mb-3">
-                  by {currentCommit.author} • {new Date(currentCommit.date).toLocaleDateString()}
+                  by {currentCommit.commit.author.name} • {new Date(currentCommit.commit.author.date).toLocaleDateString()}
                 </p>
-                <div className="flex space-x-4">
-                  <span className="text-green-400 text-sm">+{currentCommit.changes.additions}</span>
-                  <span className="text-red-400 text-sm">-{currentCommit.changes.deletions}</span>
-                </div>
+                {currentCommit.stats && (
+                  <div className="flex space-x-4">
+                    <span className="text-green-400 text-sm">+{currentCommit.stats.additions}</span>
+                    <span className="text-red-400 text-sm">-{currentCommit.stats.deletions}</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {repository?.commits.map((commit, index) => (
+            {data.commits.slice(0, 8).map((commit, index) => (
               <div
-                key={commit.id}
+                key={commit.sha}
                 className={`timeline-item p-3 rounded-lg border transition-all duration-300 cursor-pointer ${
                   index === timelinePosition[0]
                     ? 'bg-blue-500/20 border-blue-400/50'
@@ -157,8 +128,10 @@ export const GitHubIntegration = () => {
                 }`}
                 onClick={() => setTimelinePosition([index])}
               >
-                <div className="text-xs text-slate-400 mb-1">{new Date(commit.date).toLocaleDateString()}</div>
-                <div className="text-sm text-white truncate">{commit.message}</div>
+                <div className="text-xs text-slate-400 mb-1">
+                  {new Date(commit.commit.author.date).toLocaleDateString()}
+                </div>
+                <div className="text-sm text-white truncate">{commit.commit.message}</div>
               </div>
             ))}
           </div>
@@ -167,64 +140,90 @@ export const GitHubIntegration = () => {
     );
   };
 
-  const renderRepositoryStats = () => (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {[
-        { icon: GitCommit, label: 'Commits', value: repository?.stats.totalCommits, color: 'text-blue-400' },
-        { icon: Users, label: 'Contributors', value: repository?.stats.contributors, color: 'text-green-400' },
-        { icon: FileText, label: 'Files', value: repository?.stats.filesChanged, color: 'text-purple-400' },
-        { icon: TrendingUp, label: 'Lines Added', value: repository?.stats.linesAdded, color: 'text-orange-400' }
-      ].map((stat, index) => (
-        <Card key={index} className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <stat.icon className={`w-8 h-8 ${stat.color}`} />
-              <div>
-                <p className="text-2xl font-bold text-white">{stat.value?.toLocaleString()}</p>
-                <p className="text-slate-400 text-sm">{stat.label}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  const renderRepositoryStats = () => {
+    if (!data.repository) return null;
 
-  const renderBranchComparison = () => (
-    <Card className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2 text-white">
-          <GitBranch className="w-5 h-5 text-purple-400" />
-          <span>Branch Comparison</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {repository?.branches.slice(0, 2).map((branch, index) => (
-            <div key={branch} className="timeline-item space-y-4">
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="border-purple-400/50 text-purple-300">
-                  {branch}
-                </Badge>
-                <span className="text-slate-400 text-sm">
-                  {Math.floor(Math.random() * 50) + 10} commits ahead
-                </span>
+    const stats = [
+      { 
+        icon: GitCommit, 
+        label: 'Commits', 
+        value: data.stats.totalCommits, 
+        color: 'text-blue-400' 
+      },
+      { 
+        icon: Users, 
+        label: 'Contributors', 
+        value: data.stats.totalContributors, 
+        color: 'text-green-400' 
+      },
+      { 
+        icon: GitBranch, 
+        label: 'Branches', 
+        value: data.stats.totalBranches, 
+        color: 'text-purple-400' 
+      },
+      { 
+        icon: TrendingUp, 
+        label: 'Lines Changed', 
+        value: data.stats.linesChanged, 
+        color: 'text-orange-400' 
+      }
+    ];
+
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                <div>
+                  <p className="text-2xl font-bold text-white">{stat.value?.toLocaleString()}</p>
+                  <p className="text-slate-400 text-sm">{stat.label}</p>
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                {repository.commits.slice(0, 3).map((commit) => (
-                  <div key={`${branch}-${commit.id}`} className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50">
-                    <div className="text-sm text-white mb-1">{commit.message}</div>
-                    <div className="text-xs text-slate-400">{commit.author}</div>
-                  </div>
-                ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  const renderRepositoryInfo = () => {
+    if (!data.repository) return null;
+
+    return (
+      <Card className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50 mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">{data.repository.name}</h2>
+              <p className="text-slate-300 mb-4">{data.repository.description}</p>
+              <div className="flex items-center space-x-4 text-sm text-slate-400">
+                <div className="flex items-center space-x-1">
+                  <Star className="w-4 h-4" />
+                  <span>{data.repository.stargazers_count}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <GitFork className="w-4 h-4" />
+                  <span>{data.repository.forks_count}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>Updated {new Date(data.repository.updated_at).toLocaleDateString()}</span>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
+            {data.repository.language && (
+              <Badge variant="outline" className="border-blue-400/50 text-blue-300">
+                {data.repository.language}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div ref={containerRef} className="space-y-6">
@@ -234,36 +233,55 @@ export const GitHubIntegration = () => {
           <CardTitle className="text-white">GitHub Repository Analyzer</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex space-x-4">
-            <Input
-              placeholder="https://github.com/username/repository"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              className="flex-1 bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
-            />
-            <Button
-              onClick={handleAnalyzeRepo}
-              disabled={isLoading}
-              className="analyze-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Analyzing...</span>
-                </div>
-              ) : (
-                'Analyze Repository'
-              )}
-            </Button>
+          <div className="space-y-4">
+            <div className="flex space-x-4">
+              <Input
+                placeholder="https://github.com/username/repository"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                className="flex-1 bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
+                onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleAnalyzeRepo()}
+              />
+              <Button
+                onClick={handleAnalyzeRepo}
+                disabled={isLoading || !repoUrl.trim()}
+                className="analyze-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Analyzing...</span>
+                  </div>
+                ) : (
+                  'Analyze Repository'
+                )}
+              </Button>
+            </div>
+            
+            {isLoading && (
+              <div className="space-y-2">
+                <Progress value={progress} className="w-full" />
+                <p className="text-sm text-slate-400 text-center">
+                  Fetching repository data... {progress}%
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="flex items-center space-x-2 text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {repository && (
-        <div ref={timelineRef} className="space-y-6">
+      {data.repository && (
+        <div className="space-y-6">
+          {renderRepositoryInfo()}
           {renderRepositoryStats()}
           {renderCommitTimeline()}
-          {renderBranchComparison()}
           
           {/* Export Options */}
           <Card className="repo-card bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
