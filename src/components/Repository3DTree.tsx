@@ -1,7 +1,6 @@
 
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Box, Sphere, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface TreeNodeProps {
@@ -23,23 +22,49 @@ const TreeNode: React.FC<TreeNodeProps> = ({ position, type, isActive }) => {
   return (
     <group position={position}>
       {type === 'folder' ? (
-        <Box ref={meshRef} args={[0.3, 0.3, 0.3]}>
+        <mesh ref={meshRef}>
+          <boxGeometry args={[0.3, 0.3, 0.3]} />
           <meshStandardMaterial 
             color={isActive ? "#3B82F6" : "#64748B"} 
             transparent 
             opacity={0.8} 
           />
-        </Box>
+        </mesh>
       ) : (
-        <Sphere ref={meshRef} args={[0.15]}>
+        <mesh ref={meshRef}>
+          <sphereGeometry args={[0.15]} />
           <meshStandardMaterial 
             color={isActive ? "#10B981" : "#6B7280"} 
             transparent 
             opacity={0.7} 
           />
-        </Sphere>
+        </mesh>
       )}
     </group>
+  );
+};
+
+const ConnectionLine: React.FC<{ start: [number, number, number]; end: [number, number, number] }> = ({ start, end }) => {
+  const points = useMemo(() => {
+    const curve = new THREE.LineCurve3(
+      new THREE.Vector3(...start),
+      new THREE.Vector3(...end)
+    );
+    return curve.getPoints(2);
+  }, [start, end]);
+
+  return (
+    <line>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={points.length}
+          array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <lineBasicMaterial color="#64748B" transparent opacity={0.6} />
+    </line>
   );
 };
 
@@ -76,22 +101,13 @@ export const Repository3DTree: React.FC<{
         <pointLight position={[5, 5, 5]} intensity={0.8} />
         
         {/* Render connections */}
-        {connections.map((connection, index) => {
-          const points = [
-            new THREE.Vector3(...connection.start),
-            new THREE.Vector3(...connection.end)
-          ];
-          return (
-            <Line
-              key={index}
-              points={points}
-              color="#64748B"
-              lineWidth={2}
-              transparent
-              opacity={0.6}
-            />
-          );
-        })}
+        {connections.map((connection, index) => (
+          <ConnectionLine
+            key={index}
+            start={connection.start}
+            end={connection.end}
+          />
+        ))}
         
         {/* Render nodes */}
         {nodes.map((node, index) => (
