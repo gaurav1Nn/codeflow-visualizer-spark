@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import { CodeActivityCharts } from '@/components/dashboard/CodeActivityCharts';
 import { LanguageDistribution } from '@/components/dashboard/LanguageDistribution';
 import { FileTreeMap } from '@/components/dashboard/FileTreeMap';
 import { InteractiveFileExplorer } from '@/components/InteractiveFileExplorer';
-import { RepositoryCodeVisualization } from '@/components/RepositoryCodeVisualization';
+import { ModernRepositoryVisualization } from '@/components/ModernRepositoryVisualization';
 import { 
   GitBranch, 
   Users, 
@@ -249,13 +250,12 @@ export const RepositoryDashboard: React.FC<RepositoryDashboardProps> = ({
         </TabsContent>
 
         <TabsContent value="visualization" className="space-y-6 mt-6">
-          <RepositoryCodeVisualization 
+          <ModernRepositoryVisualization 
             repository={repository} 
             commits={commits}
             contributors={contributors}
             branches={branches}
           />
-          <InteractiveFileExplorer files={[]} />
         </TabsContent>
 
         <TabsContent value="contributors" className="space-y-6 mt-6">
