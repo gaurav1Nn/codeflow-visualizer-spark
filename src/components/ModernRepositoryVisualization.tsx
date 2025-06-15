@@ -60,7 +60,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       console.log(`🚀 Starting repository analysis for ${owner}/${repo}`);
       const structure = await repositoryAnalyzer.analyzeRepository(owner, repo);
       setRepositoryStructure(structure);
-      setCurrentNodes(structure.nodes.filter(node => node.depth <= 2)); // Show more files initially
+      setCurrentNodes(structure.nodes.filter(node => node.depth <= 2));
       console.log('✅ Repository structure set:', { 
         totalNodes: structure.nodes.length, 
         totalConnections: structure.connections.length,
@@ -140,7 +140,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   const getVisibleNodes = (): FileNode[] => {
     let nodes = currentNodes;
     
-    // Filter by search term
     if (searchTerm) {
       nodes = nodes.filter(node => 
         node.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -154,15 +153,15 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     switch (viewMode) {
       case 'complexity':
         return {
-          'low': '#10B981',
+          'low': '#22C55E',
           'medium': '#F59E0B',
           'high': '#EF4444'
         }[node.complexity || 'low'];
       
       case 'dependencies':
         const importCount = node.imports?.length || 0;
-        if (importCount > 5) return '#EF4444';
-        if (importCount > 2) return '#F59E0B';
+        if (importCount > 5) return '#8B5CF6';
+        if (importCount > 2) return '#3B82F6';
         return '#10B981';
       
       case 'activity':
@@ -177,20 +176,20 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   };
 
   const getNodeSize = (node: FileNode): number => {
-    const baseSize = node.type === 'directory' ? 40 : 30;
+    const baseSize = node.type === 'directory' ? 35 : 25;
     
     switch (viewMode) {
       case 'complexity':
         const complexityMultiplier = {
           'low': 1,
-          'medium': 1.3,
-          'high': 1.6
+          'medium': 1.2,
+          'high': 1.4
         }[node.complexity || 'low'];
         return baseSize * complexityMultiplier;
       
       case 'dependencies':
         const depCount = (node.imports?.length || 0) + (node.exports?.length || 0);
-        return baseSize + Math.min(depCount * 2, 20);
+        return baseSize + Math.min(depCount * 1.5, 15);
       
       default:
         return baseSize;
@@ -218,73 +217,31 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     svg.setAttribute('width', width.toString());
     svg.setAttribute('height', height.toString());
 
-    // Create enhanced definitions for arrows and effects
+    // Create clean definitions for arrows
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     
-    // Import arrow marker (blue) - Enhanced visibility
-    const importMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-    importMarker.setAttribute('id', 'importArrow');
-    importMarker.setAttribute('markerWidth', '14');
-    importMarker.setAttribute('markerHeight', '10');
-    importMarker.setAttribute('refX', '13');
-    importMarker.setAttribute('refY', '5');
-    importMarker.setAttribute('orient', 'auto');
-    importMarker.setAttribute('markerUnits', 'strokeWidth');
+    // Clean arrow marker
+    const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    arrowMarker.setAttribute('id', 'arrow');
+    arrowMarker.setAttribute('markerWidth', '10');
+    arrowMarker.setAttribute('markerHeight', '10');
+    arrowMarker.setAttribute('refX', '9');
+    arrowMarker.setAttribute('refY', '3');
+    arrowMarker.setAttribute('orient', 'auto');
+    arrowMarker.setAttribute('markerUnits', 'strokeWidth');
     
-    const importPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    importPath.setAttribute('d', 'M0,0 L0,10 L14,5 z');
-    importPath.setAttribute('fill', '#3B82F6');
-    importPath.setAttribute('stroke', '#1E40AF');
-    importPath.setAttribute('stroke-width', '1');
-    importMarker.appendChild(importPath);
-    defs.appendChild(importMarker);
+    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    arrowPath.setAttribute('d', 'M0,0 L0,6 L9,3 z');
+    arrowPath.setAttribute('fill', '#64748b');
+    arrowMarker.appendChild(arrowPath);
+    defs.appendChild(arrowMarker);
 
-    // Export arrow marker (green)
-    const exportMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-    exportMarker.setAttribute('id', 'exportArrow');
-    exportMarker.setAttribute('markerWidth', '14');
-    exportMarker.setAttribute('markerHeight', '10');
-    exportMarker.setAttribute('refX', '13');
-    exportMarker.setAttribute('refY', '5');
-    exportMarker.setAttribute('orient', 'auto');
-    exportMarker.setAttribute('markerUnits', 'strokeWidth');
-    
-    const exportPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    exportPath.setAttribute('d', 'M0,0 L0,10 L14,5 z');
-    exportPath.setAttribute('fill', '#10B981');
-    exportPath.setAttribute('stroke', '#059669');
-    exportPath.setAttribute('stroke-width', '1');
-    exportMarker.appendChild(exportPath);
-    defs.appendChild(exportMarker);
-
-    // Reference arrow marker (purple)
-    const refMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-    refMarker.setAttribute('id', 'refArrow');
-    refMarker.setAttribute('markerWidth', '14');
-    refMarker.setAttribute('markerHeight', '10');
-    refMarker.setAttribute('refX', '13');
-    refMarker.setAttribute('refY', '5');
-    refMarker.setAttribute('orient', 'auto');
-    refMarker.setAttribute('markerUnits', 'strokeWidth');
-    
-    const refPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    refPath.setAttribute('d', 'M0,0 L0,10 L14,5 z');
-    refPath.setAttribute('fill', '#8B5CF6');
-    refPath.setAttribute('stroke', '#7C3AED');
-    refPath.setAttribute('stroke-width', '1');
-    refMarker.appendChild(refPath);
-    defs.appendChild(refMarker);
-
-    // Enhanced glow filter
+    // Glow effect
     const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
     filter.setAttribute('id', 'glow');
-    filter.setAttribute('x', '-50%');
-    filter.setAttribute('y', '-50%');
-    filter.setAttribute('width', '200%');
-    filter.setAttribute('height', '200%');
     
     const feGaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
-    feGaussianBlur.setAttribute('stdDeviation', '3');
+    feGaussianBlur.setAttribute('stdDeviation', '2');
     feGaussianBlur.setAttribute('result', 'coloredBlur');
     
     const feMerge = document.createElementNS('http://www.w3.org/2000/svg', 'feMerge');
@@ -301,29 +258,28 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     
     svg.appendChild(defs);
 
-    // Dark background with subtle pattern
+    // Dark background
     const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     background.setAttribute('width', '100%');
     background.setAttribute('height', '100%');
     background.setAttribute('fill', '#0f172a');
     svg.appendChild(background);
 
-    // Calculate positions for better connection visibility
-    const positions = calculateOptimalPositions(visibleNodes, width, height);
+    // Calculate better positions
+    const positions = calculateCleanPositions(visibleNodes, width, height);
 
-    // Always render connections with enhanced visibility
+    // Render clean connections
     if (showConnections && repositoryStructure) {
-      const connectionsRendered = renderEnhancedConnections(svg, visibleNodes, positions, repositoryStructure.connections);
+      const connectionsRendered = renderCleanConnections(svg, visibleNodes, positions, repositoryStructure.connections);
       console.log(`🔗 Rendered ${connectionsRendered} connections`);
       
-      // If no connections were rendered, show demo connections
       if (connectionsRendered === 0 && visibleNodes.length >= 2) {
         console.log('🎭 No connections found, rendering demo connections');
         renderDemoConnections(svg, visibleNodes, positions);
       }
     }
 
-    // Render nodes with enhanced visibility
+    // Render nodes
     visibleNodes.forEach((node, index) => {
       const position = positions[index];
       const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -335,94 +291,56 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       const size = getNodeSize(node);
       const color = getNodeColor(node);
 
-      // Enhanced node with better visibility
+      // Clean node design
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('r', (size / 2).toString());
       circle.setAttribute('fill', color);
-      circle.setAttribute('fill-opacity', '0.9');
-      circle.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-      circle.setAttribute('stroke-width', '3');
+      circle.setAttribute('stroke', '#1e293b');
+      circle.setAttribute('stroke-width', '2');
       circle.setAttribute('filter', 'url(#glow)');
 
-      // Better icons with enhanced visibility
+      // Simple icon
       const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       icon.setAttribute('text-anchor', 'middle');
       icon.setAttribute('dy', '0.35em');
       icon.setAttribute('fill', 'white');
-      icon.setAttribute('font-size', '16px');
+      icon.setAttribute('font-size', '12px');
       icon.setAttribute('font-weight', 'bold');
-      icon.setAttribute('stroke', 'rgba(0,0,0,0.5)');
-      icon.setAttribute('stroke-width', '1');
-      icon.setAttribute('paint-order', 'stroke fill');
       
       let iconText = '📄';
       if (node.type === 'directory') iconText = '📁';
-      else if (node.extension === '.tsx') iconText = '⚛️';
-      else if (node.extension === '.ts') iconText = '🔷';
-      else if (node.extension === '.js') iconText = '🟨';
-      else if (node.extension === '.jsx') iconText = '⚛️';
+      else if (node.extension === '.tsx' || node.extension === '.jsx') iconText = '⚛️';
+      else if (node.extension === '.ts' || node.extension === '.js') iconText = 'JS';
       else if (node.extension === '.css') iconText = '🎨';
-      else if (node.extension === '.json') iconText = '⚙️';
+      else if (node.extension === '.json') iconText = '{}';
       
       icon.textContent = iconText;
 
-      // Enhanced labels with better contrast
+      // Clean label
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('dy', (size / 2 + 20).toString());
+      label.setAttribute('dy', (size / 2 + 16).toString());
       label.setAttribute('fill', 'white');
-      label.setAttribute('font-size', '12px');
-      label.setAttribute('font-weight', '600');
-      label.setAttribute('stroke', 'rgba(0,0,0,0.8)');
-      label.setAttribute('stroke-width', '3');
-      label.setAttribute('paint-order', 'stroke fill');
+      label.setAttribute('font-size', '10px');
+      label.setAttribute('font-weight', '500');
       
       let displayName = node.name;
-      if (displayName.length > 12) {
-        displayName = displayName.slice(0, 9) + '...';
+      if (displayName.length > 10) {
+        displayName = displayName.slice(0, 8) + '...';
       }
       label.textContent = displayName;
-
-      // Connection indicators with better visibility
-      if (viewMode === 'dependencies' && repositoryStructure) {
-        const nodeConnections = repositoryStructure.connections.filter(c => 
-          c.source === node.id || c.target === node.id
-        );
-        
-        if (nodeConnections.length > 0) {
-          const badge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          badge.setAttribute('cx', (size / 2 - 8).toString());
-          badge.setAttribute('cy', (-size / 2 + 8).toString());
-          badge.setAttribute('r', '10');
-          badge.setAttribute('fill', '#F59E0B');
-          badge.setAttribute('stroke', 'white');
-          badge.setAttribute('stroke-width', '3');
-          
-          const badgeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          badgeText.setAttribute('x', (size / 2 - 8).toString());
-          badgeText.setAttribute('y', (-size / 2 + 12).toString());
-          badgeText.setAttribute('text-anchor', 'middle');
-          badgeText.setAttribute('fill', 'white');
-          badgeText.setAttribute('font-size', '10px');
-          badgeText.setAttribute('font-weight', 'bold');
-          badgeText.textContent = nodeConnections.length.toString();
-          
-          nodeGroup.appendChild(badge);
-          nodeGroup.appendChild(badgeText);
-        }
-      }
 
       nodeGroup.appendChild(circle);
       nodeGroup.appendChild(icon);
       nodeGroup.appendChild(label);
       svg.appendChild(nodeGroup);
 
-      // Enhanced interactions
+      // Smooth interactions
       nodeGroup.addEventListener('mouseenter', () => {
         gsap.to(circle, {
-          scale: 1.3,
-          duration: 0.3,
-          ease: "back.out(1.7)",
+          scale: 1.2,
+          duration: 0.2,
+          ease: "power2.out",
           transformOrigin: "center"
         });
         
@@ -434,7 +352,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       nodeGroup.addEventListener('mouseleave', () => {
         gsap.to(circle, {
           scale: 1,
-          duration: 0.3,
+          duration: 0.2,
           ease: "power2.out",
           transformOrigin: "center"
         });
@@ -444,34 +362,32 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
 
       nodeGroup.addEventListener('click', () => handleNodeClick(node));
 
-      // Staggered entrance animation
+      // Smooth entrance animation
       gsap.fromTo(nodeGroup, {
         scale: 0,
-        opacity: 0,
-        rotationY: 180
+        opacity: 0
       }, {
         scale: 1,
         opacity: 1,
-        rotationY: 0,
-        duration: 0.8,
-        delay: index * 0.08,
+        duration: 0.5,
+        delay: index * 0.05,
         ease: "back.out(1.7)",
         transformOrigin: "center"
       });
     });
   };
 
-  const calculateOptimalPositions = (nodes: FileNode[], width: number, height: number) => {
+  const calculateCleanPositions = (nodes: FileNode[], width: number, height: number) => {
     const positions = [];
     const centerX = width / 2;
     const centerY = height / 2;
-    const padding = 100;
+    const padding = 80;
     
     if (nodes.length === 1) {
       positions.push({ x: centerX, y: centerY });
-    } else if (nodes.length <= 6) {
-      // Circular layout for small number of nodes
-      const radius = Math.min(width - padding, height - padding) / 3;
+    } else if (nodes.length <= 8) {
+      // Clean circular layout
+      const radius = Math.min(width - padding * 2, height - padding * 2) / 3;
       nodes.forEach((node, index) => {
         const angle = (index / nodes.length) * 2 * Math.PI - Math.PI / 2;
         const x = centerX + Math.cos(angle) * radius;
@@ -479,8 +395,8 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         positions.push({ x, y });
       });
     } else {
-      // Enhanced grid layout with better spacing
-      const cols = Math.ceil(Math.sqrt(nodes.length * 1.2));
+      // Clean grid layout
+      const cols = Math.ceil(Math.sqrt(nodes.length));
       const rows = Math.ceil(nodes.length / cols);
       const cellWidth = (width - padding * 2) / cols;
       const cellHeight = (height - padding * 2) / rows;
@@ -497,15 +413,14 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     return positions;
   };
 
-  const renderEnhancedConnections = (svg: SVGSVGElement, nodes: FileNode[], positions: any[], connections: DependencyConnection[]): number => {
-    // Filter connections to only show those between visible nodes
+  const renderCleanConnections = (svg: SVGSVGElement, nodes: FileNode[], positions: any[], connections: DependencyConnection[]): number => {
     const visibleConnections = connections.filter(connection => {
       const sourceExists = nodes.find(n => n.id === connection.source);
       const targetExists = nodes.find(n => n.id === connection.target);
       return sourceExists && targetExists;
     });
 
-    console.log(`🔗 Rendering ${visibleConnections.length} connections between visible nodes`);
+    console.log(`🔗 Rendering ${visibleConnections.length} clean connections`);
 
     visibleConnections.forEach((connection, index) => {
       const sourceIndex = nodes.findIndex(n => n.id === connection.source);
@@ -515,78 +430,46 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         const sourcePos = positions[sourceIndex];
         const targetPos = positions[targetIndex];
         
-        // Create enhanced curved path
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        // Clean straight line with subtle curve
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         
-        // Calculate connection properties
+        // Calculate edge positions
         const dx = targetPos.x - sourcePos.x;
         const dy = targetPos.y - sourcePos.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Adjust start and end points to edge of nodes
-        const nodeRadius = 30;
+        const nodeRadius = 20;
         const offsetRatio = nodeRadius / distance;
+        
         const startX = sourcePos.x + dx * offsetRatio;
         const startY = sourcePos.y + dy * offsetRatio;
         const endX = targetPos.x - dx * offsetRatio;
         const endY = targetPos.y - dy * offsetRatio;
         
-        // Create smooth curved path
-        const midX = (startX + endX) / 2;
-        const midY = (startY + endY) / 2;
-        const curvature = Math.min(distance / 3, 80);
-        const perpX = -dy / distance * curvature;
-        const perpY = dx / distance * curvature;
+        line.setAttribute('x1', startX.toString());
+        line.setAttribute('y1', startY.toString());
+        line.setAttribute('x2', endX.toString());
+        line.setAttribute('y2', endY.toString());
+        line.setAttribute('stroke', '#64748b');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('opacity', '0.6');
+        line.setAttribute('marker-end', 'url(#arrow)');
+        line.setAttribute('class', 'connection-line');
+        line.setAttribute('data-source', connection.source);
+        line.setAttribute('data-target', connection.target);
         
-        const pathData = `M ${startX} ${startY} Q ${midX + perpX} ${midY + perpY} ${endX} ${endY}`;
-        path.setAttribute('d', pathData);
+        // Smooth animation
+        const lineLength = Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2);
+        line.style.strokeDasharray = `${lineLength}`;
+        line.style.strokeDashoffset = `${lineLength}`;
         
-        // Enhanced styling based on connection type
-        let strokeColor = '#3B82F6';
-        let markerEnd = 'url(#importArrow)';
-        let strokeWidth = '3';
-        let opacity = '0.8';
-        
-        switch (connection.type) {
-          case 'import':
-            strokeColor = '#3B82F6';
-            markerEnd = 'url(#importArrow)';
-            break;
-          case 'export':
-            strokeColor = '#10B981';
-            markerEnd = 'url(#exportArrow)';
-            break;
-          case 'reference':
-            strokeColor = '#8B5CF6';
-            markerEnd = 'url(#refArrow)';
-            strokeWidth = '2';
-            break;
-        }
-        
-        path.setAttribute('stroke', strokeColor);
-        path.setAttribute('stroke-width', strokeWidth);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('opacity', opacity);
-        path.setAttribute('marker-end', markerEnd);
-        path.setAttribute('class', 'connection-path');
-        path.setAttribute('data-source', connection.source);
-        path.setAttribute('data-target', connection.target);
-        path.setAttribute('data-type', connection.type);
-        
-        // Enhanced animation with glow effect
-        const pathLength = path.getTotalLength ? path.getTotalLength() : 100;
-        path.style.strokeDasharray = `${pathLength}`;
-        path.style.strokeDashoffset = `${pathLength}`;
-        path.style.filter = 'drop-shadow(0 0 4px currentColor)';
-        
-        gsap.to(path, {
+        gsap.to(line, {
           strokeDashoffset: 0,
-          duration: 2 + Math.random() * 1,
-          delay: index * 0.2,
+          duration: 1,
+          delay: index * 0.1,
           ease: "power2.out"
         });
         
-        svg.appendChild(path);
+        svg.appendChild(line);
       }
     });
 
@@ -594,37 +477,14 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   };
 
   const renderDemoConnections = (svg: SVGSVGElement, nodes: FileNode[], positions: any[]) => {
-    // Create some demo connections to show the arrow functionality
     const demoConnections = [];
     
     if (nodes.length >= 2) {
-      // Connect first two nodes
-      demoConnections.push({
-        sourceIndex: 0,
-        targetIndex: 1,
-        type: 'import',
-        color: '#3B82F6'
-      });
+      demoConnections.push({ sourceIndex: 0, targetIndex: 1 });
     }
-    
-    if (nodes.length >= 3) {
-      // Connect first and third nodes
-      demoConnections.push({
-        sourceIndex: 0,
-        targetIndex: 2,
-        type: 'export',
-        color: '#10B981'
-      });
-    }
-    
     if (nodes.length >= 4) {
-      // Connect second and fourth nodes
-      demoConnections.push({
-        sourceIndex: 1,
-        targetIndex: 3,
-        type: 'reference',
-        color: '#8B5CF6'
-      });
+      demoConnections.push({ sourceIndex: 1, targetIndex: 2 });
+      demoConnections.push({ sourceIndex: 0, targetIndex: 3 });
     }
     
     console.log(`🎭 Rendering ${demoConnections.length} demo connections`);
@@ -633,53 +493,33 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       const sourcePos = positions[conn.sourceIndex];
       const targetPos = positions[conn.targetIndex];
       
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', sourcePos.x.toString());
+      line.setAttribute('y1', sourcePos.y.toString());
+      line.setAttribute('x2', targetPos.x.toString());
+      line.setAttribute('y2', targetPos.y.toString());
+      line.setAttribute('stroke', '#64748b');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('opacity', '0.4');
+      line.setAttribute('marker-end', 'url(#arrow)');
+      line.setAttribute('class', 'demo-connection-line');
       
-      const dx = targetPos.x - sourcePos.x;
-      const dy = targetPos.y - sourcePos.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const lineLength = Math.sqrt((targetPos.x - sourcePos.x) ** 2 + (targetPos.y - sourcePos.y) ** 2);
+      line.style.strokeDasharray = `${lineLength}`;
+      line.style.strokeDashoffset = `${lineLength}`;
       
-      const nodeRadius = 30;
-      const offsetRatio = nodeRadius / distance;
-      const startX = sourcePos.x + dx * offsetRatio;
-      const startY = sourcePos.y + dy * offsetRatio;
-      const endX = targetPos.x - dx * offsetRatio;
-      const endY = targetPos.y - dy * offsetRatio;
-      
-      const midX = (startX + endX) / 2;
-      const midY = (startY + endY) / 2;
-      const curvature = 50;
-      const perpX = -dy / distance * curvature;
-      const perpY = dx / distance * curvature;
-      
-      const pathData = `M ${startX} ${startY} Q ${midX + perpX} ${midY + perpY} ${endX} ${endY}`;
-      path.setAttribute('d', pathData);
-      path.setAttribute('stroke', conn.color);
-      path.setAttribute('stroke-width', '3');
-      path.setAttribute('fill', 'none');
-      path.setAttribute('opacity', '0.8');
-      path.setAttribute('marker-end', `url(#${conn.type}Arrow)`);
-      path.setAttribute('class', 'demo-connection-path');
-      path.style.filter = 'drop-shadow(0 0 4px currentColor)';
-      
-      // Animate demo connections
-      const pathLength = path.getTotalLength ? path.getTotalLength() : 100;
-      path.style.strokeDasharray = `${pathLength}`;
-      path.style.strokeDashoffset = `${pathLength}`;
-      
-      gsap.to(path, {
+      gsap.to(line, {
         strokeDashoffset: 0,
-        duration: 2,
-        delay: index * 0.3,
+        duration: 1,
+        delay: index * 0.2,
         ease: "power2.out"
       });
       
-      svg.appendChild(path);
+      svg.appendChild(line);
     });
   };
 
   const highlightNodeConnections = (svg: SVGSVGElement, nodeId: string, connections: DependencyConnection[]) => {
-    // Find all connections involving this node
     const relatedConnections = connections.filter(c => c.source === nodeId || c.target === nodeId);
     const relatedNodeIds = new Set<string>();
     
@@ -688,64 +528,41 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       relatedNodeIds.add(conn.target);
     });
     
-    // Highlight related paths
-    const allPaths = svg.querySelectorAll('.connection-path, .demo-connection-path');
-    allPaths.forEach(path => {
-      const source = path.getAttribute('data-source');
-      const target = path.getAttribute('data-target');
+    const allLines = svg.querySelectorAll('.connection-line, .demo-connection-line');
+    allLines.forEach(line => {
+      const source = line.getAttribute('data-source');
+      const target = line.getAttribute('data-target');
       const isRelated = relatedConnections.some(c => c.source === source && c.target === target);
       
       if (isRelated) {
-        gsap.to(path, {
-          opacity: 1,
-          strokeWidth: 5,
-          duration: 0.3
-        });
+        gsap.to(line, { opacity: 1, strokeWidth: 3, duration: 0.2 });
       } else {
-        gsap.to(path, {
-          opacity: 0.2,
-          duration: 0.3
-        });
+        gsap.to(line, { opacity: 0.2, duration: 0.2 });
       }
     });
     
-    // Highlight related nodes
     const allNodes = svg.querySelectorAll('.repo-node circle');
     allNodes.forEach((node, index) => {
       const nodeGroup = node.parentElement;
       const nodeIdAttr = nodeGroup?.getAttribute('data-node-id');
       
       if (relatedNodeIds.has(nodeIdAttr || '')) {
-        gsap.to(node, {
-          scale: 1.1,
-          duration: 0.3
-        });
+        gsap.to(node, { scale: 1.1, duration: 0.2 });
       } else {
-        gsap.to(node, {
-          opacity: 0.5,
-          duration: 0.3
-        });
+        gsap.to(node, { opacity: 0.5, duration: 0.2 });
       }
     });
   };
 
   const resetConnectionHighlighting = (svg: SVGSVGElement) => {
-    const allPaths = svg.querySelectorAll('.connection-path, .demo-connection-path');
-    allPaths.forEach(path => {
-      gsap.to(path, {
-        opacity: 0.8,
-        strokeWidth: 3,
-        duration: 0.3
-      });
+    const allLines = svg.querySelectorAll('.connection-line, .demo-connection-line');
+    allLines.forEach(line => {
+      gsap.to(line, { opacity: 0.6, strokeWidth: 2, duration: 0.2 });
     });
     
     const allNodes = svg.querySelectorAll('.repo-node circle');
     allNodes.forEach(node => {
-      gsap.to(node, {
-        scale: 1,
-        opacity: 1,
-        duration: 0.3
-      });
+      gsap.to(node, { scale: 1, opacity: 1, duration: 0.2 });
     });
   };
 
@@ -768,7 +585,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       setBreadcrumb(prev => prev.slice(0, -1));
       
       if (newPath === '') {
-        // Back to root
         if (repositoryStructure) {
           setCurrentNodes(repositoryStructure.nodes.filter(node => node.depth <= 2));
         }
@@ -803,7 +619,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
 
   return (
     <div className="space-y-6">
-      {/* Modern Control Panel */}
       <Card className="bg-gradient-to-r from-slate-800/60 to-slate-900/60 backdrop-blur-xl border-slate-700/50">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -850,7 +665,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
             </div>
           </div>
           
-          {/* Breadcrumb Navigation */}
           <div className="flex items-center space-x-2 mt-4">
             {currentPath && (
               <Button
@@ -878,7 +692,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {/* Search and View Controls */}
           <div className="flex items-center space-x-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -912,7 +725,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
             </Tabs>
           </div>
           
-          {/* Enhanced Stats Display */}
           {repositoryStructure && (
             <div className="grid grid-cols-4 gap-4 text-center">
               <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
@@ -936,7 +748,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         </CardContent>
       </Card>
 
-      {/* Main Visualization */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3">
           <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
@@ -969,7 +780,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
           </Card>
         </div>
 
-        {/* Enhanced Details Panel */}
         <div className="space-y-4">
           <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
             <CardHeader className="pb-3">
@@ -1057,31 +867,22 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
             </Card>
           )}
 
-          {/* Enhanced Legend */}
           <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-sm">Legend</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center space-x-2 text-xs">
-                <div className="w-4 h-1 bg-blue-500 rounded"></div>
-                <span className="text-slate-300">Import Connection</span>
-              </div>
-              <div className="flex items-center space-x-2 text-xs">
-                <div className="w-4 h-1 bg-green-500 rounded"></div>
-                <span className="text-slate-300">Export Connection</span>
-              </div>
-              <div className="flex items-center space-x-2 text-xs">
-                <div className="w-4 h-1 bg-purple-500 rounded"></div>
-                <span className="text-slate-300">Reference</span>
+                <div className="w-4 h-1 bg-slate-500 rounded"></div>
+                <span className="text-slate-300">File Connection</span>
               </div>
               <div className="flex items-center space-x-2 text-xs">
                 <span className="text-slate-300">⚛️</span>
                 <span className="text-slate-300">React Component</span>
               </div>
               <div className="flex items-center space-x-2 text-xs">
-                <span className="text-slate-300">🔷</span>
-                <span className="text-slate-300">TypeScript</span>
+                <span className="text-slate-300">JS</span>
+                <span className="text-slate-300">JavaScript/TypeScript</span>
               </div>
               <div className="flex items-center space-x-2 text-xs">
                 <span className="text-slate-300">📁</span>
