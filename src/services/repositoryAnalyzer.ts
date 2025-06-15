@@ -53,23 +53,28 @@ class RepositoryAnalyzer {
   };
 
   async analyzeRepository(owner: string, repo: string): Promise<RepositoryStructure> {
-    console.log(`Starting analysis of ${owner}/${repo}`);
+    console.log(`Starting secure analysis of ${owner}/${repo}`);
     
-    const rootContents = await githubApi.getRepositoryContents(owner, repo);
-    const nodes: FileNode[] = [];
-    const connections: DependencyConnection[] = [];
-    const stats = {
-      totalFiles: 0,
-      totalDirectories: 0,
-      languages: {} as Record<string, number>,
-      complexity: { low: 0, medium: 0, high: 0 }
-    };
+    try {
+      const rootContents = await githubApi.getRepositoryContents(owner, repo);
+      const nodes: FileNode[] = [];
+      const connections: DependencyConnection[] = [];
+      const stats = {
+        totalFiles: 0,
+        totalDirectories: 0,
+        languages: {} as Record<string, number>,
+        complexity: { low: 0, medium: 0, high: 0 }
+      };
 
-    await this.processDirectory(owner, repo, '', rootContents, nodes, connections, stats, 0);
-    
-    console.log('Analysis complete:', { nodes: nodes.length, connections: connections.length });
-    
-    return { nodes, connections, stats };
+      await this.processDirectory(owner, repo, '', rootContents, nodes, connections, stats, 0);
+      
+      console.log('Secure analysis complete:', { nodes: nodes.length, connections: connections.length });
+      
+      return { nodes, connections, stats };
+    } catch (error) {
+      console.error('Repository analysis failed:', error);
+      throw new Error(`Failed to analyze repository: ${error.message}`);
+    }
   }
 
   private async processDirectory(
@@ -91,7 +96,7 @@ class RepositoryAnalyzer {
         id: fullPath,
         name: item.name,
         path: fullPath,
-        type: item.type === 'dir' ? 'directory' : 'file', // Fix the type mapping here
+        type: item.type === 'dir' ? 'directory' : 'file',
         size: item.size || 0,
         extension: fileExtension,
         language,
@@ -143,12 +148,14 @@ class RepositoryAnalyzer {
     connections: DependencyConnection[]
   ): Promise<void> {
     try {
-      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`);
-      if (!response.ok) return;
+      // Use the secure GitHub API to get file contents
+      const fileContents = await githubApi.getRepositoryContents(owner, repo, filePath);
       
-      const data = await response.json();
-      if (data.content) {
-        const content = atob(data.content);
+      if (Array.isArray(fileContents)) return; // Skip if it's a directory
+      
+      // For single file, we need to decode the content
+      if ('content' in fileContents && fileContents.content) {
+        const content = atob(fileContents.content);
         const imports = this.extractImports(content);
         const exports = this.extractExports(content);
         

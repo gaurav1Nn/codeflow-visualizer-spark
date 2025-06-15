@@ -1,4 +1,6 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 export interface GitHubRepository {
   name: string;
   full_name: string;
@@ -9,6 +11,7 @@ export interface GitHubRepository {
   created_at: string;
   updated_at: string;
   default_branch: string;
+  private: boolean;
 }
 
 export interface GitHubCommit {
@@ -52,60 +55,79 @@ export interface GitHubFileContent {
   download_url?: string;
 }
 
+export interface GitHubRateLimit {
+  remaining: number | null;
+  reset: number | null;
+}
+
 class GitHubApiService {
-  private baseUrl = 'https://api.github.com';
-  private rateLimit = {
-    remaining: 60,
-    reset: Date.now(),
+  private rateLimit: GitHubRateLimit = {
+    remaining: null,
+    reset: null,
   };
 
-  private async fetchWithRateLimit(url: string): Promise<Response> {
-    const response = await fetch(url);
-    
-    // Update rate limit info
-    const remaining = response.headers.get('X-RateLimit-Remaining');
-    const reset = response.headers.get('X-RateLimit-Reset');
-    
-    if (remaining) this.rateLimit.remaining = parseInt(remaining);
-    if (reset) this.rateLimit.reset = parseInt(reset) * 1000;
+  private async callGitHubApi(endpoint: string, owner?: string, repo?: string, params?: Record<string, any>) {
+    try {
+      const { data, error } = await supabase.functions.invoke('github-api', {
+        body: { endpoint, owner, repo, params }
+      });
 
-    if (!response.ok) {
-      if (response.status === 403) {
-        throw new Error('Rate limit exceeded. Please try again later.');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(`API call failed: ${error.message}`);
       }
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-    }
 
-    return response;
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Update rate limit info
+      if (data.rateLimit) {
+        this.rateLimit = data.rateLimit;
+      }
+
+      return data.data;
+    } catch (error) {
+      console.error('GitHub API service error:', error);
+      throw error;
+    }
   }
 
   async getRepository(owner: string, repo: string): Promise<GitHubRepository> {
-    const response = await this.fetchWithRateLimit(`${this.baseUrl}/repos/${owner}/${repo}`);
-    return response.json();
+    return this.callGitHubApi('/repos/{owner}/{repo}', owner, repo);
   }
 
   async getCommits(owner: string, repo: string, limit = 30): Promise<GitHubCommit[]> {
-    const response = await this.fetchWithRateLimit(
-      `${this.baseUrl}/repos/${owner}/${repo}/commits?per_page=${limit}`
-    );
-    return response.json();
+    return this.callGitHubApi('/repos/{owner}/{repo}/commits', owner, repo, { per_page: limit });
   }
 
   async getBranches(owner: string, repo: string): Promise<GitHubBranch[]> {
-    const response = await this.fetchWithRateLimit(`${this.baseUrl}/repos/${owner}/${repo}/branches`);
-    return response.json();
+    return this.callGitHubApi('/repos/{owner}/{repo}/branches', owner, repo);
   }
 
   async getContributors(owner: string, repo: string): Promise<GitHubContributor[]> {
-    const response = await this.fetchWithRateLimit(`${this.baseUrl}/repos/${owner}/${repo}/contributors`);
-    return response.json();
+    return this.callGitHubApi('/repos/{owner}/{repo}/contributors', owner, repo);
   }
 
   async getRepositoryContents(owner: string, repo: string, path = ''): Promise<GitHubFileContent[]> {
-    const response = await this.fetchWithRateLimit(
-      `${this.baseUrl}/repos/${owner}/${repo}/contents/${path}`
-    );
-    return response.json();
+    return this.callGitHubApi(`/repos/{owner}/{repo}/contents/${path}`, owner, repo);
+  }
+
+  async getUserRepositories(username: string, type = 'all'): Promise<GitHubRepository[]> {
+    return this.callGitHubApi('/user/repos', undefined, undefined, { 
+      visibility: 'all', 
+      affiliation: 'owner,collaborator',
+      sort: 'updated',
+      per_page: 100
+    });
+  }
+
+  async searchRepositories(query: string, sort = 'updated'): Promise<{ items: GitHubRepository[] }> {
+    return this.callGitHubApi('/search/repositories', undefined, undefined, { 
+      q: query, 
+      sort, 
+      per_page: 30 
+    });
   }
 
   parseRepositoryUrl(url: string): { owner: string; repo: string } | null {
@@ -129,8 +151,13 @@ class GitHubApiService {
     return null;
   }
 
-  getRateLimit() {
+  getRateLimit(): GitHubRateLimit {
     return this.rateLimit;
+  }
+
+  isTokenConfigured(): boolean {
+    // We can't directly check the token from frontend, but we can make a test call
+    return true; // The edge function will handle token validation
   }
 }
 
