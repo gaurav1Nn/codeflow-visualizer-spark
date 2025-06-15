@@ -101,22 +101,22 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Optimized curved lines from bottom with extended delays */}
+        {/* Reduced curved lines - now only 3 lines appearing one by one with 3-second intervals */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '5s' }}>
-          {Array.from({ length: 2 }, (_, i) => (
+          {Array.from({ length: 3 }, (_, i) => (
             <svg
               key={`curved-line-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-float-fade"
               style={{
-                animationDelay: `${5 + (i * 4)}s`,
+                animationDelay: `${5 + (i * 3)}s`,
                 animationDuration: `${25 + Math.random() * 10}s`
               }}
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
               <path
-                d={`M${10 + i * 30},100 Q${30 + i * 20},${70 - i * 10} ${50 + i * 15},${45 - i * 8} T${90 - i * 10},${25 + i * 5}`}
-                stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.3)`}
+                d={`M${10 + i * 20},100 Q${30 + i * 15},${70 - i * 8} ${50 + i * 10},${45 - i * 6} T${85 - i * 8},${25 + i * 4}`}
+                stroke={`rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '147, 51, 234' : '34, 211, 238'}, 0.3)`}
                 strokeWidth="0.5"
                 fill="none"
                 className="animate-path-fade"
@@ -129,27 +129,27 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Reduced curved paths with longer delays */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '6s' }}>
+        {/* Reduced curved paths - now only 2 paths with 4-second intervals */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '8s' }}>
           {Array.from({ length: 2 }, (_, i) => (
             <svg
               key={`curved-path-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
               style={{
-                animationDelay: `${6 + (i * 5)}s`,
+                animationDelay: `${8 + (i * 4)}s`,
                 animationDuration: `${30 + Math.random() * 12}s`
               }}
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
               <path
-                d={`M${5 + i * 40},100 C${20 + i * 20},${85 - i * 8} ${40 + i * 25},${55 - i * 10} ${60 + i * 30},${35 - i * 8} S${85 - i * 20},${20 + i * 6} ${95 - i * 15},${15 + i * 4}`}
-                stroke={`rgba(${i % 3 === 0 ? '34, 211, 238' : i % 3 === 1 ? '168, 85, 247' : '236, 72, 153'}, 0.25)`}
+                d={`M${5 + i * 35},100 C${20 + i * 18},${85 - i * 6} ${40 + i * 20},${55 - i * 8} ${60 + i * 25},${35 - i * 6} S${85 - i * 15},${20 + i * 4} ${95 - i * 10},${15 + i * 3}`}
+                stroke={`rgba(${i % 2 === 0 ? '34, 211, 238' : '168, 85, 247'}, 0.25)`}
                 strokeWidth="0.8"
                 fill="none"
                 className="animate-path-glow-fade"
                 style={{
-                  animationDelay: `${6 + (i * 4)}s`,
+                  animationDelay: `${8 + (i * 4)}s`,
                   animationDuration: `${22 + Math.random() * 10}s`
                 }}
               />
@@ -157,16 +157,16 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Reduced floating curved elements with extended delays */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '7s' }}>
-          {Array.from({ length: 3 }, (_, i) => (
+        {/* Reduced floating curved elements - now only 2 elements with 5-second intervals */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '12s' }}>
+          {Array.from({ length: 2 }, (_, i) => (
             <div
               key={`curved-element-${i}`}
               className="absolute animate-curved-float"
               style={{
                 left: `${25 + Math.random() * 50}%`,
                 bottom: `${15 + Math.random() * 30}%`,
-                animationDelay: `${7 + (i * 4)}s`,
+                animationDelay: `${12 + (i * 5)}s`,
                 animationDuration: `${25 + Math.random() * 12}s`
               }}
             >
@@ -178,7 +178,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
                   fill="none"
                   className="animate-path-pulse-fade"
                   style={{
-                    animationDelay: `${7 + (i * 3)}s`,
+                    animationDelay: `${12 + (i * 5)}s`,
                     animationDuration: `${15 + Math.random() * 8}s`
                   }}
                 />
