@@ -15,18 +15,18 @@ const Index = () => {
       {/* Clean Hero Section */}
       <ProfessionalHero />
 
-      {/* Stats Section */}
-      <StatsSection />
-
-      {/* Features Grid */}
-      <FeaturesGrid />
-
-      {/* Main Content - Repository Visualization */}
-      <div className="relative px-6 pb-20">
+      {/* Main Content - Repository Visualization - Now at Top */}
+      <div className="relative px-6 py-20">
         <div className="container mx-auto max-w-7xl">
           <GitHubIntegration />
         </div>
       </div>
+
+      {/* Stats Section */}
+      <StatsSection />
+
+      {/* Features Grid - Now at Bottom */}
+      <FeaturesGrid />
     </div>
   );
 };
