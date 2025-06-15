@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface StarryBackgroundProps {
@@ -13,6 +12,7 @@ export const StarryBackground: React.FC<StarryBackgroundProps> = ({
   const particleCount = density === 'light' ? 15 : density === 'medium' ? 25 : 40;
   const orbCount = density === 'light' ? 8 : density === 'medium' ? 12 : 18;
   const mediumParticleCount = density === 'light' ? 10 : density === 'medium' ? 15 : 22;
+  const bubbleCount = density === 'light' ? 12 : density === 'medium' ? 18 : 25;
 
   return (
     <div className={`fixed inset-0 pointer-events-none z-0 ${className}`}>
@@ -79,27 +79,79 @@ export const StarryBackground: React.FC<StarryBackgroundProps> = ({
         ))}
       </div>
 
-      {/* Bubble effects - new addition for more visible effects */}
+      {/* Enhanced bubble effects - increased intensity */}
       <div className="absolute inset-0">
-        {Array.from({ length: 6 }, (_, i) => (
+        {Array.from({ length: bubbleCount }, (_, i) => (
           <div
             key={`bubble-${i}`}
             className="absolute animate-pulse"
             style={{
-              left: `${15 + Math.random() * 70}%`,
-              top: `${15 + Math.random() * 70}%`,
-              animationDelay: `${i * 0.8}s`,
-              animationDuration: `${6 + Math.random() * 4}s`
+              left: `${5 + Math.random() * 90}%`,
+              top: `${5 + Math.random() * 90}%`,
+              animationDelay: `${i * 0.6}s`,
+              animationDuration: `${4 + Math.random() * 3}s`
             }}
           >
             <div 
-              className={`w-3 h-3 rounded-full ${
-                i % 2 === 0 ? 'bg-cyan-400/30' : 'bg-violet-400/30'
+              className={`w-4 h-4 rounded-full ${
+                i % 3 === 0 ? 'bg-cyan-400/40' : 
+                i % 3 === 1 ? 'bg-violet-400/40' : 'bg-pink-400/35'
               }`}
               style={{
-                boxShadow: `0 0 15px ${
-                  i % 2 === 0 ? 'rgba(34, 211, 238, 0.3)' : 'rgba(139, 92, 246, 0.3)'
+                boxShadow: `0 0 25px ${
+                  i % 3 === 0 ? 'rgba(34, 211, 238, 0.4)' : 
+                  i % 3 === 1 ? 'rgba(139, 92, 246, 0.4)' : 'rgba(236, 72, 153, 0.4)'
                 }`
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Additional floating bubble layer for more intensity */}
+      <div className="absolute inset-0">
+        {Array.from({ length: 8 }, (_, i) => (
+          <div
+            key={`floating-bubble-${i}`}
+            className="absolute animate-orb-glow"
+            style={{
+              left: `${10 + Math.random() * 80}%`,
+              top: `${10 + Math.random() * 80}%`,
+              animationDelay: `${i * 1.2}s`,
+              animationDuration: `${8 + Math.random() * 4}s`
+            }}
+          >
+            <div 
+              className={`w-5 h-5 rounded-full ${
+                i % 2 === 0 ? 'bg-blue-300/30' : 'bg-purple-300/30'
+              }`}
+              style={{
+                boxShadow: `0 0 30px ${
+                  i % 2 === 0 ? 'rgba(147, 197, 253, 0.5)' : 'rgba(196, 181, 253, 0.5)'
+                }`
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Smaller sparkle bubbles for extra shimmer */}
+      <div className="absolute inset-0">
+        {Array.from({ length: 15 }, (_, i) => (
+          <div
+            key={`sparkle-${i}`}
+            className="absolute animate-float-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: `${6 + Math.random() * 3}s`
+            }}
+          >
+            <div 
+              className="w-2 h-2 bg-white/20 rounded-full"
+              style={{
+                boxShadow: '0 0 15px rgba(255, 255, 255, 0.3)'
               }}
             />
           </div>

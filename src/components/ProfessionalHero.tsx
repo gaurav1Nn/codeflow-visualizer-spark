@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -97,6 +96,64 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
               }}
             >
               <div className="w-1 h-1 bg-slate-300 rounded-full opacity-30" />
+            </div>
+          ))}
+        </div>
+
+        {/* Enhanced bubble effects in hero section */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={`hero-bubble-${i}`}
+              className="absolute animate-pulse"
+              style={{
+                left: `${10 + Math.random() * 80}%`,
+                top: `${10 + Math.random() * 80}%`,
+                animationDelay: `${2 + (i * 0.8)}s`,
+                animationDuration: `${5 + Math.random() * 3}s`
+              }}
+            >
+              <div 
+                className={`w-6 h-6 rounded-full ${
+                  i % 4 === 0 ? 'bg-cyan-400/50' : 
+                  i % 4 === 1 ? 'bg-violet-400/50' : 
+                  i % 4 === 2 ? 'bg-pink-400/45' : 'bg-blue-400/45'
+                }`}
+                style={{
+                  boxShadow: `0 0 35px ${
+                    i % 4 === 0 ? 'rgba(34, 211, 238, 0.5)' : 
+                    i % 4 === 1 ? 'rgba(139, 92, 246, 0.5)' : 
+                    i % 4 === 2 ? 'rgba(236, 72, 153, 0.5)' : 'rgba(59, 130, 246, 0.5)'
+                  }`
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Additional floating bubble layer in hero */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '4s' }}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              key={`hero-floating-bubble-${i}`}
+              className="absolute animate-orb-glow"
+              style={{
+                left: `${15 + Math.random() * 70}%`,
+                top: `${15 + Math.random() * 70}%`,
+                animationDelay: `${4 + (i * 1.5)}s`,
+                animationDuration: `${10 + Math.random() * 5}s`
+              }}
+            >
+              <div 
+                className={`w-7 h-7 rounded-full ${
+                  i % 2 === 0 ? 'bg-indigo-400/40' : 'bg-emerald-400/40'
+                }`}
+                style={{
+                  boxShadow: `0 0 40px ${
+                    i % 2 === 0 ? 'rgba(99, 102, 241, 0.6)' : 'rgba(16, 185, 129, 0.6)'
+                  }`
+                }}
+              />
             </div>
           ))}
         </div>
