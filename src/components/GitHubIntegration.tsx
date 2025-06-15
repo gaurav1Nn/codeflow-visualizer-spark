@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useGitHubData } from '@/hooks/useGitHubData';
 import { RepositoryDashboard } from '@/components/RepositoryDashboard';
+import { Enhanced3DVisualization } from '@/components/Enhanced3DVisualization';
 import { 
   GitBranch, 
   AlertCircle,
@@ -90,7 +92,7 @@ export const GitHubIntegration = () => {
 
   useEffect(() => {
     if (error) {
-      // Error shake animation - fix the array issue
+      // Error shake animation
       if (inputCardRef.current) {
         gsap.to(inputCardRef.current, {
           x: -10,
@@ -217,6 +219,17 @@ export const GitHubIntegration = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Enhanced 3D Visualization - Show even without repository data */}
+      <div className="dashboard-container">
+        <Enhanced3DVisualization
+          repositoryData={data}
+          repository={data.repository}
+          commits={data.commits}
+          contributors={data.contributors}
+          branches={data.branches}
+        />
+      </div>
 
       {/* Enhanced Repository Dashboard */}
       {data.repository && (

@@ -12,21 +12,33 @@ import {
   Orbit,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  GitBranch
 } from 'lucide-react';
 import { CodeFlowParticles } from './CodeFlowParticles';
 import { Repository3DTree } from './Repository3DTree';
 import { NeuralNetworkViz } from './NeuralNetworkViz';
 import { DataVortex3D } from './DataVortex3D';
+import { RepositoryArchitectureVisualization } from './RepositoryArchitectureVisualization';
 
 export const Enhanced3DVisualization: React.FC<{
   repositoryData?: any;
-}> = ({ repositoryData }) => {
-  const [activeTab, setActiveTab] = useState('particles');
+  repository?: any;
+  commits?: any[];
+  contributors?: any[];
+  branches?: any[];
+}> = ({ repositoryData, repository, commits = [], contributors = [], branches = [] }) => {
+  const [activeTab, setActiveTab] = useState('architecture');
   const [isPlaying, setIsPlaying] = useState(true);
   const [intensity, setIntensity] = useState(1);
 
   const visualizations = [
+    {
+      id: 'architecture',
+      name: 'Architecture',
+      icon: GitBranch,
+      description: 'Interactive repository architecture with file connections'
+    },
     {
       id: 'particles',
       name: 'Code Flow',
@@ -65,6 +77,15 @@ export const Enhanced3DVisualization: React.FC<{
   const renderVisualization = () => {
     try {
       switch (activeTab) {
+        case 'architecture':
+          return (
+            <RepositoryArchitectureVisualization
+              repository={repository}
+              commits={commits}
+              contributors={contributors}
+              branches={branches}
+            />
+          );
         case 'particles':
           return <CodeFlowParticles isActive={isPlaying} className="h-[500px]" />;
         case 'tree':
@@ -89,6 +110,45 @@ export const Enhanced3DVisualization: React.FC<{
       );
     }
   };
+
+  // If architecture tab is selected, render the full component without wrapper
+  if (activeTab === 'architecture') {
+    return (
+      <div className="space-y-6">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-xl border-slate-700/50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-3 text-white">
+                <Cpu className="w-6 h-6 text-blue-400" />
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  3D Code Visualization
+                </span>
+              </CardTitle>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid grid-cols-5 w-full bg-slate-700/50">
+                {visualizations.map((viz) => (
+                  <TabsTrigger
+                    key={viz.id}
+                    value={viz.id}
+                    className="flex items-center space-x-2 text-xs"
+                  >
+                    <viz.icon className="w-3 h-3" />
+                    <span className="hidden sm:inline">{viz.name}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
+        
+        {renderVisualization()}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -146,7 +206,7 @@ export const Enhanced3DVisualization: React.FC<{
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 w-full bg-slate-700/50">
+            <TabsList className="grid grid-cols-5 w-full bg-slate-700/50">
               {visualizations.map((viz) => (
                 <TabsTrigger
                   key={viz.id}
