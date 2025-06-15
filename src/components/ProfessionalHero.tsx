@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,12 +43,12 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/15 via-indigo-500/25 to-teal-500/15 animate-parallax-drift" style={{ animationDelay: '5s', animationDuration: '22s' }} />
         </div>
 
-        {/* Starry bubble effects - floating particles */}
+        {/* Enhanced starry bubble effects for hero - more intense */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1s' }}>
-          {Array.from({ length: 20 }, (_, i) => (
+          {Array.from({ length: 30 }, (_, i) => (
             <div
-              key={`star-particle-${i}`}
-              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-60"
+              key={`hero-star-particle-${i}`}
+              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-70"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -60,11 +59,11 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Larger glowing orbs */}
+        {/* Larger glowing orbs for hero */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
-          {Array.from({ length: 8 }, (_, i) => (
+          {Array.from({ length: 12 }, (_, i) => (
             <div
-              key={`glow-orb-${i}`}
+              key={`hero-glow-orb-${i}`}
               className="absolute animate-orb-glow"
               style={{
                 left: `${20 + Math.random() * 60}%`,
@@ -83,11 +82,11 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Medium floating particles */}
+        {/* Medium floating particles for hero */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
-          {Array.from({ length: 12 }, (_, i) => (
+          {Array.from({ length: 18 }, (_, i) => (
             <div
-              key={`medium-particle-${i}`}
+              key={`hero-medium-particle-${i}`}
               className="absolute animate-large-particle-drift"
               style={{
                 left: `${10 + Math.random() * 80}%`,
@@ -96,7 +95,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
                 animationDuration: `${15 + Math.random() * 8}s`
               }}
             >
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full opacity-40" />
+              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full opacity-50" />
             </div>
           ))}
         </div>
