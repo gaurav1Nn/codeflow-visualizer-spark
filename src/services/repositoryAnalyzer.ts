@@ -153,8 +153,8 @@ class RepositoryAnalyzer {
       
       if (Array.isArray(fileContents)) return; // Skip if it's a directory
       
-      // For single file, we need to decode the content
-      if ('content' in fileContents && fileContents.content) {
+      // Type guard to check if fileContents has content property
+      if ('content' in fileContents && typeof fileContents.content === 'string') {
         const content = atob(fileContents.content);
         const imports = this.extractImports(content);
         const exports = this.extractExports(content);
