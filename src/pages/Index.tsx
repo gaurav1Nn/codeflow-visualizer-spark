@@ -18,8 +18,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Site-wide starry background */}
-      <StarryBackground density="light" />
+      {/* Site-wide starry bubble background */}
+      <StarryBackground density="medium" includeBubbles={true} />
 
       {/* Professional Header */}
       <Header />

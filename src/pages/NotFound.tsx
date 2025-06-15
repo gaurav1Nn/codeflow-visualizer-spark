@@ -15,7 +15,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 relative">
-      <StarryBackground density="light" />
+      <StarryBackground density="light" includeBubbles={true} />
       <div className="text-center relative z-10">
         <h1 className="text-4xl font-bold mb-4">404</h1>
         <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
