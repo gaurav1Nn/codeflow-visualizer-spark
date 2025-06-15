@@ -5,29 +5,50 @@ interface StarryBackgroundProps {
   density?: 'light' | 'medium' | 'heavy';
   className?: string;
   includeBubbles?: boolean;
+  includeStars?: boolean;
 }
 
 export const StarryBackground: React.FC<StarryBackgroundProps> = ({ 
-  density = 'light',
+  density = 'medium',
   className = '',
-  includeBubbles = true
+  includeBubbles = true,
+  includeStars = true
 }) => {
-  const particleCount = density === 'light' ? 12 : density === 'medium' ? 20 : 30;
+  const particleCount = density === 'light' ? 15 : density === 'medium' ? 25 : 40;
   const bubbleCount = includeBubbles ? (density === 'light' ? 8 : density === 'medium' ? 12 : 18) : 0;
+  const starCount = includeStars ? (density === 'light' ? 20 : density === 'medium' ? 35 : 50) : 0;
 
   return (
     <div className={`fixed inset-0 pointer-events-none z-0 overflow-hidden ${className}`}>
-      {/* Star particles */}
+      {/* Starry particles */}
+      {includeStars && (
+        <div className="absolute inset-0">
+          {Array.from({ length: starCount }, (_, i) => (
+            <div
+              key={`star-${i}`}
+              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-60"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${8 + Math.random() * 6}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Floating particles */}
       <div className="absolute inset-0">
         {Array.from({ length: particleCount }, (_, i) => (
           <div
-            key={`star-particle-${i}`}
-            className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-40"
+            key={`particle-${i}`}
+            className="absolute w-2 h-2 bg-gradient-to-br from-purple-400/30 to-blue-400/30 rounded-full animate-curved-float-fade"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 1.5}s`,
-              animationDuration: `${12 + Math.random() * 8}s`
+              animationDelay: `${i * 1.2}s`,
+              animationDuration: `${15 + Math.random() * 10}s`
             }}
           />
         ))}
@@ -41,12 +62,12 @@ export const StarryBackground: React.FC<StarryBackgroundProps> = ({
               key={`bubble-${i}`}
               className="absolute rounded-full bg-gradient-to-br from-purple-400/20 via-blue-400/15 to-pink-400/20 animate-bubble-float backdrop-blur-sm border border-white/10"
               style={{
-                width: `${20 + Math.random() * 40}px`,
-                height: `${20 + Math.random() * 40}px`,
+                width: `${25 + Math.random() * 45}px`,
+                height: `${25 + Math.random() * 45}px`,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${i * 2}s`,
-                animationDuration: `${15 + Math.random() * 10}s`
+                animationDuration: `${18 + Math.random() * 12}s`
               }}
             />
           ))}
@@ -55,15 +76,15 @@ export const StarryBackground: React.FC<StarryBackgroundProps> = ({
 
       {/* Floating orbs */}
       <div className="absolute inset-0">
-        {Array.from({ length: 4 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <div
             key={`orb-${i}`}
             className="absolute w-32 h-32 rounded-full bg-gradient-to-br from-purple-500/10 via-blue-500/8 to-pink-500/10 animate-orb-float blur-xl"
             style={{
-              left: `${20 + (i * 20)}%`,
-              top: `${10 + (i * 25)}%`,
-              animationDelay: `${i * 3}s`,
-              animationDuration: `${20 + Math.random() * 10}s`
+              left: `${15 + (i * 15)}%`,
+              top: `${10 + (i * 20)}%`,
+              animationDelay: `${i * 4}s`,
+              animationDuration: `${25 + Math.random() * 15}s`
             }}
           />
         ))}

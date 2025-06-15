@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Header } from '@/components/Header';
 import { GitHubIntegration } from '@/components/GitHubIntegration';
@@ -18,8 +17,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Site-wide starry bubble background */}
-      <StarryBackground density="medium" includeBubbles={true} />
+      {/* Site-wide starry bubble background with both stars and bubbles */}
+      <StarryBackground density="medium" includeBubbles={true} includeStars={true} />
 
       {/* Professional Header */}
       <Header />
