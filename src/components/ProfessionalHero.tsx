@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,153 +33,153 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
 
   return (
     <div className="relative py-32 md:py-40 overflow-hidden">
-      {/* Enhanced gradient background with fade-in and stagger effect */}
+      {/* Optimized gradient background with slower fade-in */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 animate-gradient-fade-in">
         
-        {/* Layered gradient backgrounds with parallax drift */}
-        <div className="absolute inset-0 opacity-40 animate-stagger-fade" style={{ animationDelay: '0.5s' }}>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-500/20 via-purple-500/30 to-pink-500/20 animate-parallax-drift" />
-        </div>
+        {/* Layered gradient backgrounds with extended delays */}
         <div className="absolute inset-0 opacity-30 animate-stagger-fade" style={{ animationDelay: '1s' }}>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/15 via-indigo-500/25 to-teal-500/15 animate-parallax-drift" style={{ animationDelay: '5s', animationDuration: '22s' }} />
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-500/15 via-purple-500/20 to-pink-500/15 animate-parallax-drift" />
+        </div>
+        <div className="absolute inset-0 opacity-20 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/10 via-indigo-500/15 to-teal-500/10 animate-parallax-drift" style={{ animationDelay: '8s', animationDuration: '25s' }} />
         </div>
 
-        {/* Enhanced starry bubble effects for hero - more intense */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1s' }}>
-          {Array.from({ length: 30 }, (_, i) => (
+        {/* Reduced hero starry effects with longer delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
+          {Array.from({ length: 15 }, (_, i) => (
             <div
               key={`hero-star-particle-${i}`}
-              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-70"
+              className="absolute w-0.5 h-0.5 bg-white rounded-full animate-float-particle opacity-40"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${8 + Math.random() * 4}s`
+                animationDelay: `${2 + (i * 0.8)}s`,
+                animationDuration: `${12 + Math.random() * 6}s`
               }}
             />
           ))}
         </div>
 
-        {/* Larger glowing orbs for hero */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
-          {Array.from({ length: 12 }, (_, i) => (
+        {/* Reduced glowing orbs with extended delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '3s' }}>
+          {Array.from({ length: 6 }, (_, i) => (
             <div
               key={`hero-glow-orb-${i}`}
               className="absolute animate-orb-glow"
               style={{
                 left: `${20 + Math.random() * 60}%`,
                 top: `${20 + Math.random() * 60}%`,
-                animationDelay: `${i * 1.5}s`,
-                animationDuration: `${12 + Math.random() * 6}s`
+                animationDelay: `${3 + (i * 2.5)}s`,
+                animationDuration: `${15 + Math.random() * 8}s`
               }}
             >
               <div 
-                className={`w-2 h-2 rounded-full ${
-                  i % 3 === 0 ? 'bg-blue-400' : 
-                  i % 3 === 1 ? 'bg-purple-400' : 'bg-pink-400'
+                className={`w-1.5 h-1.5 rounded-full ${
+                  i % 3 === 0 ? 'bg-blue-400/60' : 
+                  i % 3 === 1 ? 'bg-purple-400/60' : 'bg-pink-400/60'
                 }`}
               />
             </div>
           ))}
         </div>
 
-        {/* Medium floating particles for hero */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
-          {Array.from({ length: 18 }, (_, i) => (
+        {/* Reduced medium particles with longer delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '4s' }}>
+          {Array.from({ length: 8 }, (_, i) => (
             <div
               key={`hero-medium-particle-${i}`}
               className="absolute animate-large-particle-drift"
               style={{
                 left: `${10 + Math.random() * 80}%`,
                 top: `${10 + Math.random() * 80}%`,
-                animationDelay: `${i * 2}s`,
-                animationDuration: `${15 + Math.random() * 8}s`
+                animationDelay: `${4 + (i * 3)}s`,
+                animationDuration: `${18 + Math.random() * 10}s`
               }}
             >
-              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full opacity-50" />
+              <div className="w-1 h-1 bg-slate-300 rounded-full opacity-30" />
             </div>
           ))}
         </div>
 
-        {/* Curved lines from bottom with fade in/out */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.8s' }}>
-          {Array.from({ length: 4 }, (_, i) => (
+        {/* Optimized curved lines from bottom with extended delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '5s' }}>
+          {Array.from({ length: 2 }, (_, i) => (
             <svg
               key={`curved-line-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-float-fade"
               style={{
-                animationDelay: `${i * 3}s`,
-                animationDuration: `${20 + Math.random() * 10}s`
-              }}
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d={`M${10 + i * 20},100 Q${30 + i * 15},${60 - i * 8} ${50 + i * 10},${40 - i * 5} T${90 - i * 5},${20 + i * 3}`}
-                stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.4)`}
-                strokeWidth="0.5"
-                fill="none"
-                className="animate-path-fade"
-                style={{
-                  animationDelay: `${i * 2}s`,
-                  animationDuration: `${15 + Math.random() * 5}s`
-                }}
-              />
-            </svg>
-          ))}
-        </div>
-
-        {/* Additional curved paths with different curvatures */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
-          {Array.from({ length: 3 }, (_, i) => (
-            <svg
-              key={`curved-path-${i}`}
-              className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
-              style={{
-                animationDelay: `${i * 4}s`,
+                animationDelay: `${5 + (i * 4)}s`,
                 animationDuration: `${25 + Math.random() * 10}s`
               }}
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
               <path
-                d={`M${5 + i * 30},100 C${20 + i * 15},${80 - i * 5} ${40 + i * 20},${50 - i * 8} ${60 + i * 25},${30 - i * 6} S${85 - i * 15},${15 + i * 4} ${95 - i * 10},${10 + i * 2}`}
-                stroke={`rgba(${i % 3 === 0 ? '34, 211, 238' : i % 3 === 1 ? '168, 85, 247' : '236, 72, 153'}, 0.3)`}
-                strokeWidth="0.8"
+                d={`M${10 + i * 30},100 Q${30 + i * 20},${70 - i * 10} ${50 + i * 15},${45 - i * 8} T${90 - i * 10},${25 + i * 5}`}
+                stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.3)`}
+                strokeWidth="0.5"
                 fill="none"
-                className="animate-path-glow-fade"
+                className="animate-path-fade"
                 style={{
-                  animationDelay: `${i * 3}s`,
-                  animationDuration: `${18 + Math.random() * 7}s`
+                  animationDelay: `${5 + (i * 3)}s`,
+                  animationDuration: `${20 + Math.random() * 8}s`
                 }}
               />
             </svg>
           ))}
         </div>
 
-        {/* Floating curved elements */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2.2s' }}>
-          {Array.from({ length: 5 }, (_, i) => (
+        {/* Reduced curved paths with longer delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '6s' }}>
+          {Array.from({ length: 2 }, (_, i) => (
+            <svg
+              key={`curved-path-${i}`}
+              className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
+              style={{
+                animationDelay: `${6 + (i * 5)}s`,
+                animationDuration: `${30 + Math.random() * 12}s`
+              }}
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                d={`M${5 + i * 40},100 C${20 + i * 20},${85 - i * 8} ${40 + i * 25},${55 - i * 10} ${60 + i * 30},${35 - i * 8} S${85 - i * 20},${20 + i * 6} ${95 - i * 15},${15 + i * 4}`}
+                stroke={`rgba(${i % 3 === 0 ? '34, 211, 238' : i % 3 === 1 ? '168, 85, 247' : '236, 72, 153'}, 0.25)`}
+                strokeWidth="0.8"
+                fill="none"
+                className="animate-path-glow-fade"
+                style={{
+                  animationDelay: `${6 + (i * 4)}s`,
+                  animationDuration: `${22 + Math.random() * 10}s`
+                }}
+              />
+            </svg>
+          ))}
+        </div>
+
+        {/* Reduced floating curved elements with extended delays */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '7s' }}>
+          {Array.from({ length: 3 }, (_, i) => (
             <div
               key={`curved-element-${i}`}
               className="absolute animate-curved-float"
               style={{
                 left: `${25 + Math.random() * 50}%`,
                 bottom: `${15 + Math.random() * 30}%`,
-                animationDelay: `${i * 2.5}s`,
-                animationDuration: `${20 + Math.random() * 10}s`
+                animationDelay: `${7 + (i * 4)}s`,
+                animationDuration: `${25 + Math.random() * 12}s`
               }}
             >
-              <svg width="50" height="30" viewBox="0 0 50 30">
+              <svg width="40" height="25" viewBox="0 0 40 25">
                 <path
-                  d="M5,25 Q25,5 45,25"
-                  stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.5)`}
+                  d="M5,20 Q20,5 35,20"
+                  stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.4)`}
                   strokeWidth="1"
                   fill="none"
                   className="animate-path-pulse-fade"
                   style={{
-                    animationDelay: `${i * 2}s`,
-                    animationDuration: `${12 + Math.random() * 6}s`
+                    animationDelay: `${7 + (i * 3)}s`,
+                    animationDuration: `${15 + Math.random() * 8}s`
                   }}
                 />
               </svg>
@@ -186,14 +187,13 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Depth layers with improved gradient fade */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-slate-900/40 animate-gradient-fade-in" style={{ animationDelay: '0.3s' }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/15 to-transparent animate-gradient-fade-in" style={{ animationDelay: '0.6s' }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/40 via-transparent to-slate-900/40 animate-gradient-fade-in" style={{ animationDelay: '0.9s' }} />
+        {/* Optimized depth layers */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30 animate-gradient-fade-in" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent animate-gradient-fade-in" style={{ animationDelay: '1s' }} />
       </div>
       
-      {/* Main content with staggered fade-in */}
-      <div className="container mx-auto px-6 text-center relative z-10 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
+      {/* Main content with optimized delay */}
+      <div className="container mx-auto px-6 text-center relative z-10 animate-stagger-fade" style={{ animationDelay: '0.8s' }}>
         {/* Main Title */}
         <div className="mb-12">
           <h1 className="text-6xl md:text-8xl font-bold leading-tight mb-8 text-white drop-shadow-2xl">
@@ -204,14 +204,14 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
         </div>
 
         {/* Subtitle */}
-        <div className="mb-16 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
+        <div className="mb-16 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
           <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
             Visualize, understand, and edit GitHub repositories instantly.
           </p>
         </div>
 
         {/* GitHub Input Section */}
-        <div className="mb-8 max-w-3xl mx-auto animate-stagger-fade" style={{ animationDelay: '1.8s' }}>
+        <div className="mb-8 max-w-3xl mx-auto animate-stagger-fade" style={{ animationDelay: '1.6s' }}>
           <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
             <div className="flex items-center flex-1 w-full">
               <Github className="w-6 h-6 text-slate-400 mr-4 flex-shrink-0" />
@@ -237,7 +237,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
         </div>
 
         {/* Additional Info */}
-        <div className="text-slate-400 text-sm animate-stagger-fade" style={{ animationDelay: '2.1s' }}>
+        <div className="text-slate-400 text-sm animate-stagger-fade" style={{ animationDelay: '2s' }}>
           Free to use • No registration required • Works with public repositories
         </div>
       </div>
