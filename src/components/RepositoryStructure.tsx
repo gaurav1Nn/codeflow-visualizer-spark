@@ -42,8 +42,16 @@ export const RepositoryStructure: React.FC<RepositoryStructureProps> = ({ owner,
     try {
       setIsLoading(true);
       const contents = await githubApi.getRepositoryContents(owner, repo);
-      const tree = await buildFileTree(contents, 0);
-      setFileTree(tree);
+      
+      // Type guard to ensure we have an array
+      if (Array.isArray(contents)) {
+        const tree = await buildFileTree(contents, 0);
+        setFileTree(tree);
+      } else {
+        // If it's a single file, wrap it in an array
+        const tree = await buildFileTree([contents], 0);
+        setFileTree(tree);
+      }
     } catch (error) {
       console.error('Error loading repository structure:', error);
     } finally {
@@ -66,7 +74,14 @@ export const RepositoryStructure: React.FC<RepositoryStructureProps> = ({ owner,
       if (item.type === 'dir' && (depth === 0 || ['src', 'components', 'pages', 'hooks'].includes(item.name))) {
         try {
           const childContents = await githubApi.getRepositoryContents(owner, repo, item.path);
-          node.children = await buildFileTree(childContents, depth + 1);
+          
+          // Type guard to ensure we have an array for building the tree
+          if (Array.isArray(childContents)) {
+            node.children = await buildFileTree(childContents, depth + 1);
+          } else {
+            // If it's a single file, wrap it in an array
+            node.children = await buildFileTree([childContents], depth + 1);
+          }
         } catch (error) {
           console.error(`Error loading contents for ${item.path}:`, error);
         }
@@ -258,4 +273,93 @@ export const RepositoryStructure: React.FC<RepositoryStructureProps> = ({ owner,
       </div>
     </div>
   );
+
+  function getFileIcon(file: FileNode) {
+    if (file.type === 'dir') {
+      return expandedFolders.has(file.path) ? <FolderOpen className="w-4 h-4 text-blue-400" /> : <Folder className="w-4 h-4 text-blue-400" />;
+    }
+    
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const iconMap: Record<string, JSX.Element> = {
+      'js': <Code className="w-4 h-4 text-yellow-400" />,
+      'ts': <Code className="w-4 h-4 text-blue-400" />,
+      'tsx': <Code className="w-4 h-4 text-blue-400" />,
+      'jsx': <Code className="w-4 h-4 text-yellow-400" />,
+      'json': <Database className="w-4 h-4 text-green-400" />,
+      'md': <FileText className="w-4 h-4 text-gray-400" />,
+      'config': <Settings className="w-4 h-4 text-orange-400" />,
+    };
+    
+    return iconMap[extension || ''] || <FileText className="w-4 h-4 text-gray-400" />;
+  }
+
+  function getFileTypeColor(file: FileNode) {
+    if (file.type === 'dir') return 'bg-blue-500/20 text-blue-300';
+    
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const colorMap: Record<string, string> = {
+      'js': 'bg-yellow-500/20 text-yellow-300',
+      'ts': 'bg-blue-500/20 text-blue-300',
+      'tsx': 'bg-blue-500/20 text-blue-300',
+      'jsx': 'bg-yellow-500/20 text-yellow-300',
+      'json': 'bg-green-500/20 text-green-300',
+      'md': 'bg-gray-500/20 text-gray-300',
+    };
+    
+    return colorMap[extension || ''] || 'bg-gray-500/20 text-gray-300';
+  }
+
+  function toggleFolder(path: string) {
+    const newExpanded = new Set(expandedFolders);
+    if (newExpanded.has(path)) {
+      newExpanded.delete(path);
+    } else {
+      newExpanded.add(path);
+    }
+    setExpandedFolders(newExpanded);
+  }
+
+  function renderFileNode(node: FileNode) {
+    const isExpanded = expandedFolders.has(node.path);
+    
+    return (
+      <div key={node.path} className="select-none">
+        <div
+          className={`flex items-center space-x-2 py-1 px-2 rounded cursor-pointer hover:bg-slate-700/50 transition-colors ${
+            selectedFile?.path === node.path ? 'bg-blue-500/20 border border-blue-500/30' : ''
+          }`}
+          style={{ paddingLeft: `${node.depth * 20 + 8}px` }}
+          onClick={() => {
+            if (node.type === 'dir') {
+              toggleFolder(node.path);
+            } else {
+              setSelectedFile(node);
+            }
+          }}
+        >
+          {node.type === 'dir' && (
+            <div className="w-4 h-4 flex items-center justify-center">
+              {isExpanded ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
+            </div>
+          )}
+          {getFileIcon(node)}
+          <span className="text-slate-200 text-sm truncate flex-1">{node.name}</span>
+          <Badge variant="secondary" className={`text-xs ${getFileTypeColor(node)}`}>
+            {node.type === 'dir' ? 'DIR' : node.name.split('.').pop()?.toUpperCase()}
+          </Badge>
+          {node.type === 'file' && (
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-white">
+              <Eye className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
+        
+        {node.type === 'dir' && isExpanded && node.children && (
+          <div>
+            {node.children.map(renderFileNode)}
+          </div>
+        )}
+      </div>
+    );
+  }
 };
