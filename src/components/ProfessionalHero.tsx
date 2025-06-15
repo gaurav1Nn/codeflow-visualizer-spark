@@ -44,14 +44,71 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/15 via-indigo-500/25 to-teal-500/15 animate-parallax-drift" style={{ animationDelay: '5s', animationDuration: '22s' }} />
         </div>
 
-        {/* Curved lines from bottom with fade in/out */}
+        {/* Starry bubble effects - floating particles */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1s' }}>
+          {Array.from({ length: 20 }, (_, i) => (
+            <div
+              key={`star-particle-${i}`}
+              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-60"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${8 + Math.random() * 4}s`
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Larger glowing orbs */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              key={`glow-orb-${i}`}
+              className="absolute animate-orb-glow"
+              style={{
+                left: `${20 + Math.random() * 60}%`,
+                top: `${20 + Math.random() * 60}%`,
+                animationDelay: `${i * 1.5}s`,
+                animationDuration: `${12 + Math.random() * 6}s`
+              }}
+            >
+              <div 
+                className={`w-2 h-2 rounded-full ${
+                  i % 3 === 0 ? 'bg-blue-400' : 
+                  i % 3 === 1 ? 'bg-purple-400' : 'bg-pink-400'
+                }`}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Medium floating particles */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
-          {Array.from({ length: 5 }, (_, i) => (
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={`medium-particle-${i}`}
+              className="absolute animate-large-particle-drift"
+              style={{
+                left: `${10 + Math.random() * 80}%`,
+                top: `${10 + Math.random() * 80}%`,
+                animationDelay: `${i * 2}s`,
+                animationDuration: `${15 + Math.random() * 8}s`
+              }}
+            >
+              <div className="w-1.5 h-1.5 bg-slate-300 rounded-full opacity-40" />
+            </div>
+          ))}
+        </div>
+
+        {/* Curved lines from bottom with fade in/out */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.8s' }}>
+          {Array.from({ length: 4 }, (_, i) => (
             <svg
               key={`curved-line-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-float-fade"
               style={{
-                animationDelay: `${i * 2}s`,
+                animationDelay: `${i * 3}s`,
                 animationDuration: `${20 + Math.random() * 10}s`
               }}
               viewBox="0 0 100 100"
@@ -64,7 +121,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
                 fill="none"
                 className="animate-path-fade"
                 style={{
-                  animationDelay: `${i * 1.5}s`,
+                  animationDelay: `${i * 2}s`,
                   animationDuration: `${15 + Math.random() * 5}s`
                 }}
               />
@@ -74,25 +131,25 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
 
         {/* Additional curved paths with different curvatures */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
-          {Array.from({ length: 4 }, (_, i) => (
+          {Array.from({ length: 3 }, (_, i) => (
             <svg
               key={`curved-path-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
               style={{
-                animationDelay: `${i * 3}s`,
+                animationDelay: `${i * 4}s`,
                 animationDuration: `${25 + Math.random() * 10}s`
               }}
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
             >
               <path
-                d={`M${5 + i * 25},100 C${20 + i * 10},${80 - i * 5} ${40 + i * 15},${50 - i * 8} ${60 + i * 20},${30 - i * 6} S${85 - i * 10},${15 + i * 4} ${95 - i * 5},${10 + i * 2}`}
+                d={`M${5 + i * 30},100 C${20 + i * 15},${80 - i * 5} ${40 + i * 20},${50 - i * 8} ${60 + i * 25},${30 - i * 6} S${85 - i * 15},${15 + i * 4} ${95 - i * 10},${10 + i * 2}`}
                 stroke={`rgba(${i % 3 === 0 ? '34, 211, 238' : i % 3 === 1 ? '168, 85, 247' : '236, 72, 153'}, 0.3)`}
                 strokeWidth="0.8"
                 fill="none"
                 className="animate-path-glow-fade"
                 style={{
-                  animationDelay: `${i * 2.5}s`,
+                  animationDelay: `${i * 3}s`,
                   animationDuration: `${18 + Math.random() * 7}s`
                 }}
               />
@@ -101,27 +158,27 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
         </div>
 
         {/* Floating curved elements */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2.5s' }}>
-          {Array.from({ length: 6 }, (_, i) => (
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2.2s' }}>
+          {Array.from({ length: 5 }, (_, i) => (
             <div
               key={`curved-element-${i}`}
               className="absolute animate-curved-float"
               style={{
-                left: `${20 + Math.random() * 60}%`,
-                bottom: `${10 + Math.random() * 40}%`,
-                animationDelay: `${i * 2}s`,
+                left: `${25 + Math.random() * 50}%`,
+                bottom: `${15 + Math.random() * 30}%`,
+                animationDelay: `${i * 2.5}s`,
                 animationDuration: `${20 + Math.random() * 10}s`
               }}
             >
-              <svg width="60" height="40" viewBox="0 0 60 40">
+              <svg width="50" height="30" viewBox="0 0 50 30">
                 <path
-                  d="M5,35 Q30,5 55,35"
+                  d="M5,25 Q25,5 45,25"
                   stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.5)`}
                   strokeWidth="1"
                   fill="none"
                   className="animate-path-pulse-fade"
                   style={{
-                    animationDelay: `${i * 1.8}s`,
+                    animationDelay: `${i * 2}s`,
                     animationDuration: `${12 + Math.random() * 6}s`
                   }}
                 />
