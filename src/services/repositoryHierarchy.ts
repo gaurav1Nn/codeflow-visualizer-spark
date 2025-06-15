@@ -70,9 +70,19 @@ export class RepositoryHierarchyService {
         // Always show the node itself
         visible.push(node);
         
-        // Only show children if the directory is expanded
+        // Only show immediate children if the directory is expanded
         if (node.isExpanded && node.children && node.type === 'directory') {
-          traverse(node.children);
+          // Only show direct children, not all descendants
+          node.children.forEach(child => {
+            visible.push(child);
+            
+            // If child is also an expanded directory, show its direct children
+            if (child.isExpanded && child.children && child.type === 'directory') {
+              child.children.forEach(grandchild => {
+                visible.push(grandchild);
+              });
+            }
+          });
         }
       });
     };
@@ -95,7 +105,7 @@ export class RepositoryHierarchyService {
         'tailwind.config.ts', 'tsconfig.json', '.gitignore'
       ];
       return importantFiles.includes(node.name);
-    }).slice(0, 8); // Limit to 8 items to prevent overcrowding
+    }).slice(0, 10); // Increased limit slightly
   }
 
   filterConnections(connections: DependencyConnection[], visibleNodes: HierarchicalNode[]): FilteredConnections {
@@ -104,8 +114,8 @@ export class RepositoryHierarchyService {
       visibleIds.has(conn.source) && visibleIds.has(conn.target)
     );
 
-    // Show fewer connections initially, more when folders are expanded
-    const maxConnections = visibleNodes.length > 8 ? 2 : 4;
+    // Show fewer connections to reduce clutter
+    const maxConnections = Math.min(3, Math.ceil(visibleNodes.length / 4));
 
     // Prioritize connections by importance
     const primaryConnections = relevantConnections.filter(conn => {
@@ -153,7 +163,7 @@ export class RepositoryHierarchyService {
           nodePath.some(pathSegment => pathSegment.includes(part))
         );
         
-        if (shouldExpand && node.children) {
+        if (shouldExpand && node.children && node.type === 'directory') {
           return {
             ...node,
             isExpanded: true,
@@ -179,6 +189,44 @@ export class RepositoryHierarchyService {
     };
 
     return collapse(hierarchy);
+  }
+
+  // Get only files that belong to a specific expanded folder
+  getFilesInFolder(hierarchy: HierarchicalNode[], folderPath: string): HierarchicalNode[] {
+    const findFolder = (nodes: HierarchicalNode[], targetPath: string): HierarchicalNode | null => {
+      for (const node of nodes) {
+        if (node.path === targetPath && node.type === 'directory') {
+          return node;
+        }
+        if (node.children) {
+          const found = findFolder(node.children, targetPath);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const folder = findFolder(hierarchy, folderPath);
+    if (!folder || !folder.isExpanded || !folder.children) {
+      return [];
+    }
+
+    // Return only direct children (files and immediate subdirectories)
+    return folder.children.filter(child => {
+      // Show all directories and important files
+      if (child.type === 'directory') return true;
+      
+      // Filter files based on importance and type
+      const importantExtensions = ['.tsx', '.ts', '.jsx', '.js', '.json', '.md'];
+      const skipFiles = ['.d.ts', '.map', '.lock', '.log'];
+      
+      if (skipFiles.some(ext => child.name.includes(ext))) {
+        return false;
+      }
+      
+      return importantExtensions.includes(child.extension || '') || 
+             ['package.json', 'README.md', 'index.html'].includes(child.name);
+    });
   }
 }
 

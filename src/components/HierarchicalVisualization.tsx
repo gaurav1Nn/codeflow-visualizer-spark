@@ -47,48 +47,67 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
   };
 
   const filterRelevantNodes = (nodes: HierarchicalNode[]): HierarchicalNode[] => {
-    // If searching, show search results
     if (searchTerm) {
-      return nodes;
+      return nodes.slice(0, 15); // Limit search results
     }
 
-    // Filter out less important files to reduce clutter
-    const filteredNodes = nodes.filter(node => {
-      // Always show directories
-      if (node.type === 'directory') {
+    // Show only truly visible nodes based on expansion state
+    const relevantNodes = nodes.filter(node => {
+      // Always show root level directories
+      if (node.level === 0 && node.type === 'directory') {
         return true;
       }
 
-      // Show important files
-      const importantFiles = [
-        'package.json', 'tsconfig.json', 'vite.config.ts', 'tailwind.config.ts',
-        'README.md', '.gitignore', 'index.html', 'App.tsx', 'main.tsx'
-      ];
-      
-      const importantExtensions = ['.tsx', '.ts', '.jsx', '.js'];
-      const skipFiles = ['.d.ts', '.map', '.lock', '.log'];
+      // Show root level important files
+      if (node.level === 0 && node.type === 'file') {
+        const importantFiles = [
+          'package.json', 'README.md', 'index.html', 'vite.config.ts', 
+          'tailwind.config.ts', 'tsconfig.json', '.gitignore', 'App.tsx', 'main.tsx'
+        ];
+        return importantFiles.includes(node.name);
+      }
 
-      // Skip unimportant files
-      if (skipFiles.some(ext => node.name.includes(ext))) {
+      // For deeper levels, only show if parent is expanded
+      if (node.level > 0) {
+        // Find the parent in hierarchy and check if it's expanded
+        const parentPath = node.path.split('/').slice(0, -1).join('/') || '';
+        const parent = findNodeByPath(hierarchy, parentPath);
+        
+        if (parent && parent.isExpanded) {
+          // Show important files and all directories
+          if (node.type === 'directory') return true;
+          
+          const importantExtensions = ['.tsx', '.ts', '.jsx', '.js'];
+          const skipFiles = ['.d.ts', '.map', '.lock', '.log', 'node_modules'];
+          
+          if (skipFiles.some(skip => node.name.includes(skip) || node.path.includes(skip))) {
+            return false;
+          }
+          
+          return importantExtensions.includes(node.extension || '') || 
+                 ['package.json', 'README.md', 'index.html'].includes(node.name);
+        }
         return false;
       }
 
-      // Include important files
-      if (importantFiles.includes(node.name)) {
-        return true;
-      }
-
-      // Include files with important extensions
-      if (importantExtensions.includes(node.extension || '')) {
-        return true;
-      }
-
-      // Skip other files unless they're at root level
-      return node.level === 0;
+      return false;
     });
 
     // Limit total nodes to prevent overcrowding
-    return filteredNodes.slice(0, 20);
+    return relevantNodes.slice(0, 12);
+  };
+
+  const findNodeByPath = (nodes: HierarchicalNode[], targetPath: string): HierarchicalNode | null => {
+    for (const node of nodes) {
+      if (node.path === targetPath) {
+        return node;
+      }
+      if (node.children) {
+        const found = findNodeByPath(node.children, targetPath);
+        if (found) return found;
+      }
+    }
+    return null;
   };
 
   const renderBubbleVisualization = () => {
@@ -143,7 +162,7 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     filter.setAttribute('height', '200%');
     
     const feGaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
-    feGaussianBlur.setAttribute('stdDeviation', '4');
+    feGaussianBlur.setAttribute('stdDeviation', '3');
     feGaussianBlur.setAttribute('result', 'coloredBlur');
     filter.appendChild(feGaussianBlur);
     
@@ -169,11 +188,11 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     // Filter nodes to show only relevant ones
     const relevantNodes = filterRelevantNodes(visibleNodes);
     
-    // Calculate optimized positions with better spacing
+    // Calculate optimized positions with proper spacing
     const positions = calculateOptimizedPositions(relevantNodes, width, height);
 
     // Render connections if enabled and not too many nodes
-    if (showConnections && connections.primary.length > 0 && relevantNodes.length <= 12) {
+    if (showConnections && connections.primary.length > 0 && relevantNodes.length <= 8) {
       renderConnections(svg, relevantNodes, positions, connections);
     }
 
@@ -190,14 +209,13 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     const positions: Array<{ x: number; y: number }> = [];
     const centerX = width / 2;
     const centerY = height / 2;
-    const minSpacing = 120; // Increased minimum spacing
-    const padding = 100; // Increased padding
+    const minSpacing = 160; // Increased minimum spacing significantly
+    const padding = 120; // Increased padding
     
-    // Separate directories and files
+    // Separate directories and files by level
     const directories = nodes.filter(n => n.type === 'directory');
     const files = nodes.filter(n => n.type === 'file');
     
-    let positionIndex = 0;
     const usedPositions: Array<{ x: number; y: number; radius: number }> = [];
     
     const checkCollision = (x: number, y: number, radius: number) => {
@@ -207,76 +225,111 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
       });
     };
     
-    const findValidPosition = (baseX: number, baseY: number, radius: number, maxAttempts = 50) => {
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const angle = (attempt / maxAttempts) * 2 * Math.PI;
-        const offset = Math.min(attempt * 35, 200); // Increased offset
-        const x = Math.max(padding + radius, Math.min(width - padding - radius, baseX + Math.cos(angle) * offset));
-        const y = Math.max(padding + radius, Math.min(height - padding - radius, baseY + Math.sin(angle) * offset));
+    const findValidPosition = (baseX: number, baseY: number, radius: number, maxAttempts = 60) => {
+      // Try the base position first
+      if (!checkCollision(baseX, baseY, radius)) {
+        usedPositions.push({ x: baseX, y: baseY, radius });
+        return { x: baseX, y: baseY };
+      }
+
+      // Use a spiral pattern for better distribution
+      for (let attempt = 1; attempt < maxAttempts; attempt++) {
+        const spiralRadius = attempt * 40;
+        const angle = attempt * 0.5; // Golden angle for better distribution
+        
+        const x = Math.max(padding + radius, Math.min(width - padding - radius, 
+          baseX + Math.cos(angle) * spiralRadius));
+        const y = Math.max(padding + radius, Math.min(height - padding - radius, 
+          baseY + Math.sin(angle) * spiralRadius));
         
         if (!checkCollision(x, y, radius)) {
           usedPositions.push({ x, y, radius });
           return { x, y };
         }
       }
-      // Fallback position
-      const fallbackX = Math.max(padding + radius, Math.min(width - padding - radius, baseX));
-      const fallbackY = Math.max(padding + radius, Math.min(height - padding - radius, baseY));
-      usedPositions.push({ x: fallbackX, y: fallbackY, radius });
-      return { x: fallbackX, y: fallbackY };
+      
+      // Fallback to grid position if spiral fails
+      const gridSize = Math.ceil(Math.sqrt(nodes.length));
+      const cellWidth = (width - 2 * padding) / gridSize;
+      const cellHeight = (height - 2 * padding) / gridSize;
+      const gridX = (usedPositions.length % gridSize) * cellWidth + padding + cellWidth / 2;
+      const gridY = Math.floor(usedPositions.length / gridSize) * cellHeight + padding + cellHeight / 2;
+      
+      usedPositions.push({ x: gridX, y: gridY, radius });
+      return { x: gridX, y: gridY };
     };
     
-    // Position directories first (they're more important)
-    if (directories.length === 1) {
-      // Single directory in center
-      const radius = 60;
-      const position = findValidPosition(centerX, centerY, radius);
-      positions[positionIndex] = position;
-      positionIndex++;
-    } else if (directories.length > 1) {
-      // Multiple directories in organized layout
-      directories.forEach((dir, index) => {
-        const angle = (index / directories.length) * 2 * Math.PI;
-        const radius = Math.min(width, height) * 0.25; // Increased radius for better spacing
-        const baseX = centerX + Math.cos(angle) * radius;
-        const baseY = centerY + Math.sin(angle) * radius;
-        const nodeRadius = 55;
-        
-        const position = findValidPosition(baseX, baseY, nodeRadius);
-        positions[positionIndex] = position;
-        positionIndex++;
-      });
-    }
-    
-    // Position files around directories or in outer areas
-    files.forEach((file, index) => {
+    // Position root directories first in a circle
+    const rootDirectories = directories.filter(d => d.level === 0);
+    rootDirectories.forEach((dir, index) => {
+      const nodeRadius = getNodeRadius(dir);
       let baseX: number, baseY: number;
       
-      if (directories.length > 0 && index < directories.length) {
-        // Position around corresponding directory
-        const dirIndex = index % directories.length;
-        const dirPos = positions[dirIndex];
-        if (dirPos) {
-          const angle = (index / files.length) * 2 * Math.PI;
-          const distance = 140; // Increased distance from directory
-          baseX = dirPos.x + Math.cos(angle) * distance;
-          baseY = dirPos.y + Math.sin(angle) * distance;
-        } else {
-          baseX = centerX;
-          baseY = centerY;
-        }
+      if (rootDirectories.length === 1) {
+        baseX = centerX;
+        baseY = centerY - 50; // Slightly above center
       } else {
-        // Position in outer ring with better spacing
-        const angle = (index / Math.max(files.length, 1)) * 2 * Math.PI;
+        const angle = (index / rootDirectories.length) * 2 * Math.PI - Math.PI / 2;
+        const radius = Math.min(width, height) * 0.2;
+        baseX = centerX + Math.cos(angle) * radius;
+        baseY = centerY + Math.sin(angle) * radius;
+      }
+      
+      const position = findValidPosition(baseX, baseY, nodeRadius);
+      positions[nodes.indexOf(dir)] = position;
+    });
+    
+    // Position subdirectories around their parents
+    const subDirectories = directories.filter(d => d.level > 0);
+    subDirectories.forEach((dir) => {
+      const nodeRadius = getNodeRadius(dir);
+      const parentPath = dir.path.split('/').slice(0, -1).join('/') || '';
+      const parentIndex = nodes.findIndex(n => n.path === parentPath);
+      
+      let baseX: number, baseY: number;
+      if (parentIndex >= 0 && positions[parentIndex]) {
+        const parentPos = positions[parentIndex];
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 120 + dir.level * 30;
+        baseX = parentPos.x + Math.cos(angle) * distance;
+        baseY = parentPos.y + Math.sin(angle) * distance;
+      } else {
+        // Fallback to outer ring
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = Math.min(width, height) * 0.3;
+        baseX = centerX + Math.cos(angle) * radius;
+        baseY = centerY + Math.sin(angle) * radius;
+      }
+      
+      const position = findValidPosition(baseX, baseY, nodeRadius);
+      positions[nodes.indexOf(dir)] = position;
+    });
+    
+    // Position files in outer areas or around their parent directories
+    files.forEach((file) => {
+      const nodeRadius = getNodeRadius(file);
+      const parentPath = file.path.split('/').slice(0, -1).join('/') || '';
+      const parentIndex = nodes.findIndex(n => n.path === parentPath);
+      
+      let baseX: number, baseY: number;
+      
+      if (parentIndex >= 0 && positions[parentIndex]) {
+        // Position around parent directory
+        const parentPos = positions[parentIndex];
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 100 + file.level * 25;
+        baseX = parentPos.x + Math.cos(angle) * distance;
+        baseY = parentPos.y + Math.sin(angle) * distance;
+      } else {
+        // Position in outer ring
+        const angle = Math.random() * 2 * Math.PI;
         const radius = Math.min(width, height) * 0.35;
         baseX = centerX + Math.cos(angle) * radius;
         baseY = centerY + Math.sin(angle) * radius;
       }
       
-      const nodeRadius = getNodeRadius(file);
       const position = findValidPosition(baseX, baseY, nodeRadius);
-      positions[positionIndex] = position;
-      positionIndex++;
+      positions[nodes.indexOf(file)] = position;
     });
     
     return positions;
@@ -284,16 +337,17 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
 
   const getNodeRadius = (node: HierarchicalNode): number => {
     if (node.type === 'directory') {
-      return node.level === 0 ? 55 : 40;
+      if (node.level === 0) return 50;
+      return 35;
     }
     
     // Important files get larger radius
     const importantFiles = ['App.tsx', 'main.tsx', 'index.tsx', 'package.json'];
     if (importantFiles.includes(node.name)) {
-      return 35;
+      return 30;
     }
     
-    return node.level === 0 ? 30 : 25;
+    return node.level === 0 ? 25 : 20;
   };
 
   const renderBubbleNode = (svg: SVGSVGElement, node: HierarchicalNode, position: { x: number; y: number }, index: number) => {
@@ -329,7 +383,7 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     icon.setAttribute('text-anchor', 'middle');
     icon.setAttribute('dominant-baseline', 'central');
     icon.setAttribute('fill', 'white');
-    icon.setAttribute('font-size', node.level === 0 ? '18px' : '14px');
+    icon.setAttribute('font-size', node.level === 0 ? '16px' : '12px');
     icon.setAttribute('font-family', 'system-ui');
     icon.textContent = getNodeIcon(node);
 
@@ -337,12 +391,12 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('dominant-baseline', 'central');
-    label.setAttribute('dy', (radius + 22).toString());
+    label.setAttribute('dy', (radius + 20).toString());
     label.setAttribute('fill', 'white');
-    label.setAttribute('font-size', node.level === 0 ? '10px' : '9px');
+    label.setAttribute('font-size', node.level === 0 ? '10px' : '8px');
     label.setAttribute('font-weight', '600');
     label.setAttribute('font-family', 'system-ui');
-    const maxLength = node.level === 0 ? 10 : 8;
+    const maxLength = node.level === 0 ? 12 : 10;
     const displayName = node.name.length > maxLength ? node.name.slice(0, maxLength) + '…' : node.name;
     label.textContent = displayName;
 
@@ -351,7 +405,7 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
       const childCount = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       childCount.setAttribute('text-anchor', 'middle');
       childCount.setAttribute('dominant-baseline', 'central');
-      childCount.setAttribute('dy', (radius + 38).toString());
+      childCount.setAttribute('dy', (radius + 35).toString());
       childCount.setAttribute('fill', '#10B981');
       childCount.setAttribute('font-size', '7px');
       childCount.setAttribute('font-weight', '500');
@@ -374,22 +428,22 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
       
       const hoverTween = gsap.timeline()
         .to(circle, {
-          scale: 1.15,
+          scale: 1.1,
           filter: "url(#glow) brightness(1.2)",
-          duration: 0.25,
+          duration: 0.2,
           ease: "power2.out"
         })
         .to(icon, {
-          scale: 1.1,
-          duration: 0.2,
+          scale: 1.05,
+          duration: 0.15,
           ease: "power2.out"
-        }, "-=0.15")
+        }, "-=0.1")
         .to(label, {
           fill: "#F8FAFC",
-          fontSize: node.level === 0 ? "11px" : "10px",
-          duration: 0.2,
+          fontSize: node.level === 0 ? "11px" : "9px",
+          duration: 0.15,
           ease: "power2.out"
-        }, "-=0.2");
+        }, "-=0.15");
       
       addAnimation(hoverTween);
     };
@@ -403,20 +457,20 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
         .to(circle, {
           scale: 1,
           filter: "url(#glow)",
-          duration: 0.2,
+          duration: 0.15,
           ease: "power2.out"
         })
         .to(icon, {
           scale: 1,
-          duration: 0.15,
+          duration: 0.1,
           ease: "power2.out"
-        }, "-=0.1")
+        }, "-=0.05")
         .to(label, {
           fill: "white",
-          fontSize: node.level === 0 ? "10px" : "9px",
-          duration: 0.15,
+          fontSize: node.level === 0 ? "10px" : "8px",
+          duration: 0.1,
           ease: "power2.out"
-        }, "-=0.15");
+        }, "-=0.1");
       
       addAnimation(exitTween);
     };
@@ -450,9 +504,9 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     const entranceTween = gsap.to(nodeGroup, {
       scale: 1,
       opacity: 1,
-      duration: 0.5,
-      delay: index * 0.1,
-      ease: "back.out(1.7)"
+      duration: 0.4,
+      delay: index * 0.08,
+      ease: "back.out(1.5)"
     });
     addAnimation(entranceTween);
 
@@ -477,13 +531,13 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     line.setAttribute('y1', sourcePos.y.toString());
     line.setAttribute('x2', targetPos.x.toString());
     line.setAttribute('y2', targetPos.y.toString());
-    line.setAttribute('stroke', 'rgba(100, 116, 139, 0.4)');
-    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('stroke', 'rgba(100, 116, 139, 0.3)');
+    line.setAttribute('stroke-width', '1');
     line.setAttribute('opacity', '0');
 
     const connectionTween = gsap.to(line, {
-      opacity: 0.6,
-      duration: 0.5,
+      opacity: 0.5,
+      duration: 0.4,
       delay: delay,
       ease: "power2.out"
     });
