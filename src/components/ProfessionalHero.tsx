@@ -60,7 +60,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({
       <div className="container mx-auto px-6 text-center relative z-10">
         {/* Main Title */}
         <div className="mb-12">
-          <h1 className="text-8xl md:text-8xl font-medium leading-tight mb-8 text-black drop-shadow-4xl font-serif tracking-tight ">
+          <h1 className="text-6xl md:text-8xl font-medium leading-tight mb-8 text-black drop-shadow-4xl font-serif tracking-tight ">
             Turn your code into live
             <br />
             <span className="text-white bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">visualizations</span>
