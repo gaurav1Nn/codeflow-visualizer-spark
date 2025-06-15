@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,79 +44,89 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/15 via-indigo-500/25 to-teal-500/15 animate-parallax-drift" style={{ animationDelay: '5s', animationDuration: '22s' }} />
         </div>
 
-        {/* Floating orbs with slower drift */}
+        {/* Curved lines from bottom with fade in/out */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
-          {Array.from({ length: 3 }, (_, i) => (
-            <div
-              key={`floating-orb-${i}`}
-              className="absolute rounded-full bg-gradient-to-r from-blue-400/30 to-purple-500/30 animate-float-lines"
+          {Array.from({ length: 5 }, (_, i) => (
+            <svg
+              key={`curved-line-${i}`}
+              className="absolute bottom-0 w-full h-full animate-curved-float-fade"
               style={{
-                width: `${60 + Math.random() * 80}px`,
-                height: `${60 + Math.random() * 80}px`,
-                left: `${20 + Math.random() * 60}%`,
-                top: `${20 + Math.random() * 60}%`,
-                animationDelay: `${i * 3}s`,
-                animationDuration: `${18 + Math.random() * 8}s`
+                animationDelay: `${i * 2}s`,
+                animationDuration: `${20 + Math.random() * 10}s`
               }}
-            />
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                d={`M${10 + i * 20},100 Q${30 + i * 15},${60 - i * 8} ${50 + i * 10},${40 - i * 5} T${90 - i * 5},${20 + i * 3}`}
+                stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.4)`}
+                strokeWidth="0.5"
+                fill="none"
+                className="animate-path-fade"
+                style={{
+                  animationDelay: `${i * 1.5}s`,
+                  animationDuration: `${15 + Math.random() * 5}s`
+                }}
+              />
+            </svg>
           ))}
         </div>
 
-        {/* Slow drifting lines - horizontal */}
+        {/* Additional curved paths with different curvatures */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
           {Array.from({ length: 4 }, (_, i) => (
-            <div
-              key={`drift-line-${i}`}
-              className="absolute h-px w-full bg-gradient-to-r from-transparent via-blue-400/40 to-transparent animate-drift-left"
+            <svg
+              key={`curved-path-${i}`}
+              className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
               style={{
-                top: `${20 + (i * 20)}%`,
-                animationDelay: `${i * 6}s`,
+                animationDelay: `${i * 3}s`,
                 animationDuration: `${25 + Math.random() * 10}s`
               }}
-            />
-          ))}
-          
-          {Array.from({ length: 3 }, (_, i) => (
-            <div
-              key={`drift-line-reverse-${i}`}
-              className="absolute h-px w-full bg-gradient-to-l from-transparent via-purple-400/40 to-transparent animate-drift-right"
-              style={{
-                top: `${30 + (i * 25)}%`,
-                animationDelay: `${i * 8}s`,
-                animationDuration: `${30 + Math.random() * 10}s`
-              }}
-            />
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              <path
+                d={`M${5 + i * 25},100 C${20 + i * 10},${80 - i * 5} ${40 + i * 15},${50 - i * 8} ${60 + i * 20},${30 - i * 6} S${85 - i * 10},${15 + i * 4} ${95 - i * 5},${10 + i * 2}`}
+                stroke={`rgba(${i % 3 === 0 ? '34, 211, 238' : i % 3 === 1 ? '168, 85, 247' : '236, 72, 153'}, 0.3)`}
+                strokeWidth="0.8"
+                fill="none"
+                className="animate-path-glow-fade"
+                style={{
+                  animationDelay: `${i * 2.5}s`,
+                  animationDuration: `${18 + Math.random() * 7}s`
+                }}
+              />
+            </svg>
           ))}
         </div>
 
-        {/* Vertical floating lines */}
+        {/* Floating curved elements */}
         <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2.5s' }}>
-          {Array.from({ length: 3 }, (_, i) => (
+          {Array.from({ length: 6 }, (_, i) => (
             <div
-              key={`vertical-float-${i}`}
-              className="absolute w-px h-full bg-gradient-to-b from-transparent via-cyan-400/30 to-transparent animate-float-lines"
+              key={`curved-element-${i}`}
+              className="absolute animate-curved-float"
               style={{
-                left: `${25 + (i * 25)}%`,
-                animationDelay: `${i * 4}s`,
-                animationDuration: `${20 + Math.random() * 8}s`
+                left: `${20 + Math.random() * 60}%`,
+                bottom: `${10 + Math.random() * 40}%`,
+                animationDelay: `${i * 2}s`,
+                animationDuration: `${20 + Math.random() * 10}s`
               }}
-            />
-          ))}
-        </div>
-
-        {/* Reduced floating particles with drift */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '3s' }}>
-          {Array.from({ length: 8 }, (_, i) => (
-            <div
-              key={`drift-particle-${i}`}
-              className="absolute w-2 h-2 bg-blue-400/40 rounded-full animate-float-lines"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 15}s`,
-                animationDuration: `${15 + Math.random() * 10}s`
-              }}
-            />
+            >
+              <svg width="60" height="40" viewBox="0 0 60 40">
+                <path
+                  d="M5,35 Q30,5 55,35"
+                  stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.5)`}
+                  strokeWidth="1"
+                  fill="none"
+                  className="animate-path-pulse-fade"
+                  style={{
+                    animationDelay: `${i * 1.8}s`,
+                    animationDuration: `${12 + Math.random() * 6}s`
+                  }}
+                />
+              </svg>
+            </div>
           ))}
         </div>
 
