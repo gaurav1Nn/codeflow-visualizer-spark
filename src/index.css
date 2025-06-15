@@ -113,72 +113,219 @@
   }
 }
 
-/* Enhanced dynamic line animations */
-@keyframes diagonal-move {
+/* Enhanced Radial Convergence Line Animations */
+@keyframes radial-inward-top {
   0% {
-    transform: translateX(-200px) translateY(-100px) rotate(25deg);
+    transform: translateY(-200vh) scale(1);
     opacity: 0;
   }
   20% {
     opacity: 0.8;
   }
   80% {
-    opacity: 0.8;
+    opacity: 0.6;
   }
   100% {
-    transform: translateX(200vw) translateY(100px) rotate(25deg);
+    transform: translateY(50vh) scale(0.3);
     opacity: 0;
   }
 }
 
-@keyframes diagonal-move-reverse {
+@keyframes radial-inward-bottom {
   0% {
-    transform: translateX(100vw) translateY(-100px) rotate(-25deg);
+    transform: translateY(200vh) scale(1);
     opacity: 0;
   }
   20% {
-    opacity: 0.6;
+    opacity: 0.8;
   }
   80% {
     opacity: 0.6;
   }
   100% {
-    transform: translateX(-200px) translateY(100px) rotate(-25deg);
+    transform: translateY(-50vh) scale(0.3);
     opacity: 0;
   }
 }
 
-@keyframes diagonal-wave {
+@keyframes radial-inward-left {
   0% {
-    transform: translateX(-300px) translateY(-150px) rotate(35deg) scaleY(1);
+    transform: translateX(-200vw) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(50vw) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes radial-inward-right {
+  0% {
+    transform: translateX(200vw) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-50vw) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes corner-to-center-tl {
+  0% {
+    transform: translate(-100vw, -100vh) scale(1);
     opacity: 0;
   }
   25% {
     opacity: 0.7;
-    transform: translateX(25vw) translateY(-50px) rotate(35deg) scaleY(1.5);
-  }
-  50% {
-    opacity: 0.9;
-    transform: translateX(50vw) translateY(0px) rotate(35deg) scaleY(1);
   }
   75% {
-    opacity: 0.7;
-    transform: translateX(75vw) translateY(50px) rotate(35deg) scaleY(1.5);
+    opacity: 0.5;
   }
   100% {
-    transform: translateX(150vw) translateY(150px) rotate(35deg) scaleY(1);
+    transform: translate(50vw, 50vh) scale(0.2);
     opacity: 0;
   }
 }
 
-@keyframes pulse-line {
-  0%, 100% {
+@keyframes corner-to-center-tr {
+  0% {
+    transform: translate(100vw, -100vh) scale(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50vw, 50vh) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes corner-to-center-bl {
+  0% {
+    transform: translate(-100vw, 100vh) scale(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(50vw, -50vh) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes corner-to-center-br {
+  0% {
+    transform: translate(100vw, 100vh) scale(1);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50vw, -50vh) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes radial-pulse-inward {
+  0% {
+    transform: scale(3) translate(-50%, -50%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.6;
+  }
+  70% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.1) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes tunnel-lines {
+  0% {
+    transform: translateZ(-1000px) rotateX(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateZ(0px) rotateX(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes depth-convergence {
+  0% {
+    transform: perspective(1000px) translateZ(-500px) scale(2);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: perspective(1000px) translateZ(0px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes nebula-flow {
+  0% {
+    transform: translateX(-50%) translateY(0%);
     opacity: 0.3;
-    transform: scaleY(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scaleY(1.2);
+    transform: translateX(50%) translateY(-20%);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(150%) translateY(0%);
+    opacity: 0.3;
+  }
+}
+
+@keyframes orb-glow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+    filter: blur(20px);
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.9;
+    filter: blur(30px);
   }
 }
 
@@ -235,43 +382,6 @@
   }
 }
 
-@keyframes orb-glow {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.6;
-    filter: blur(20px);
-  }
-  50% {
-    transform: scale(1.5);
-    opacity: 0.9;
-    filter: blur(30px);
-  }
-}
-
-@keyframes grid-sweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100vw);
-  }
-}
-
-@keyframes nebula-flow {
-  0% {
-    transform: translateX(-50%) translateY(0%);
-    opacity: 0.3;
-  }
-  50% {
-    transform: translateX(50%) translateY(-20%);
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateX(150%) translateY(0%);
-    opacity: 0.3;
-  }
-}
-
 @keyframes color-shift {
   0% { filter: hue-rotate(0deg); }
   25% { filter: hue-rotate(90deg); }
@@ -281,20 +391,48 @@
 }
 
 /* Animation classes */
-.animate-diagonal-move {
-  animation: diagonal-move linear infinite;
+.animate-radial-inward-top {
+  animation: radial-inward-top linear infinite;
 }
 
-.animate-diagonal-move-reverse {
-  animation: diagonal-move-reverse linear infinite;
+.animate-radial-inward-bottom {
+  animation: radial-inward-bottom linear infinite;
 }
 
-.animate-diagonal-wave {
-  animation: diagonal-wave linear infinite;
+.animate-radial-inward-left {
+  animation: radial-inward-left linear infinite;
 }
 
-.animate-pulse-line {
-  animation: pulse-line ease-in-out infinite;
+.animate-radial-inward-right {
+  animation: radial-inward-right linear infinite;
+}
+
+.animate-corner-to-center-tl {
+  animation: corner-to-center-tl linear infinite;
+}
+
+.animate-corner-to-center-tr {
+  animation: corner-to-center-tr linear infinite;
+}
+
+.animate-corner-to-center-bl {
+  animation: corner-to-center-bl linear infinite;
+}
+
+.animate-corner-to-center-br {
+  animation: corner-to-center-br linear infinite;
+}
+
+.animate-radial-pulse-inward {
+  animation: radial-pulse-inward ease-out infinite;
+}
+
+.animate-tunnel-lines {
+  animation: tunnel-lines linear infinite;
+}
+
+.animate-depth-convergence {
+  animation: depth-convergence ease-in-out infinite;
 }
 
 .animate-float-particle {
@@ -311,10 +449,6 @@
 
 .animate-orb-glow {
   animation: orb-glow ease-in-out infinite;
-}
-
-.animate-grid-sweep {
-  animation: grid-sweep 15s linear infinite;
 }
 
 .animate-nebula-flow {

@@ -33,7 +33,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
 
   return (
     <div className="relative py-32 md:py-40 overflow-hidden">
-      {/* Enhanced dynamic animated background */}
+      {/* Enhanced radial convergence animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
         
         {/* Nebula-like flowing background */}
@@ -60,58 +60,131 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Enhanced moving diagonal lines */}
+        {/* Enhanced Radial Convergence Lines */}
         <div className="absolute inset-0">
-          {/* Fast moving lines */}
-          {Array.from({ length: 12 }, (_, i) => (
+          {/* Lines converging from top edge */}
+          {Array.from({ length: 10 }, (_, i) => (
             <div
-              key={`fast-line-${i}`}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-blue-500/40 to-transparent animate-diagonal-move opacity-70"
+              key={`top-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-b from-blue-500/60 via-blue-400/40 to-transparent animate-radial-inward-top origin-top"
               style={{
-                left: `${i * 8}%`,
-                animationDelay: `${i * 0.5}s`,
-                animationDuration: `${6 + Math.random() * 4}s`
+                left: `${(i + 1) * 10}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${8 + Math.random() * 4}s`
               }}
             />
           ))}
           
-          {/* Wavy lines */}
+          {/* Lines converging from bottom edge */}
+          {Array.from({ length: 10 }, (_, i) => (
+            <div
+              key={`bottom-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-t from-purple-500/60 via-purple-400/40 to-transparent animate-radial-inward-bottom origin-bottom"
+              style={{
+                left: `${(i + 1) * 10}%`,
+                animationDelay: `${i * 0.4}s`,
+                animationDuration: `${10 + Math.random() * 5}s`
+              }}
+            />
+          ))}
+          
+          {/* Lines converging from left edge */}
           {Array.from({ length: 8 }, (_, i) => (
             <div
-              key={`wave-line-${i}`}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-purple-500/50 to-transparent animate-diagonal-wave opacity-60"
+              key={`left-line-${i}`}
+              className="absolute h-px w-full bg-gradient-to-r from-cyan-500/60 via-cyan-400/40 to-transparent animate-radial-inward-left origin-left"
               style={{
-                left: `${i * 12}%`,
-                animationDelay: `${i * 1.5}s`,
+                top: `${(i + 1) * 12.5}%`,
+                animationDelay: `${i * 0.5}s`,
                 animationDuration: `${12 + Math.random() * 6}s`
               }}
             />
           ))}
           
-          {/* Slow reverse lines */}
-          {Array.from({ length: 10 }, (_, i) => (
+          {/* Lines converging from right edge */}
+          {Array.from({ length: 8 }, (_, i) => (
             <div
-              key={`slow-reverse-${i}`}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-cyan-500/35 to-transparent animate-diagonal-move-reverse opacity-50"
+              key={`right-line-${i}`}
+              className="absolute h-px w-full bg-gradient-to-l from-pink-500/60 via-pink-400/40 to-transparent animate-radial-inward-right origin-right"
               style={{
-                left: `${i * 10 + 5}%`,
-                animationDelay: `${i * 2}s`,
-                animationDuration: `${15 + Math.random() * 10}s`
+                top: `${(i + 1) * 12.5}%`,
+                animationDelay: `${i * 0.6}s`,
+                animationDuration: `${14 + Math.random() * 7}s`
               }}
             />
           ))}
         </div>
 
-        {/* Pulsing static lines */}
-        <div className="absolute inset-0 opacity-25">
-          {Array.from({ length: 20 }, (_, i) => (
+        {/* Corner-to-Center Convergence Lines */}
+        <div className="absolute inset-0">
+          {/* Top-left to center */}
+          {Array.from({ length: 5 }, (_, i) => (
             <div
-              key={`pulse-line-${i}`}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-400/60 to-transparent animate-pulse-line transform rotate-12"
+              key={`tl-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-br from-blue-400/50 to-transparent animate-corner-to-center-tl transform rotate-45 origin-top-left"
               style={{
                 left: `${i * 5}%`,
-                animationDelay: `${i * 0.3}s`,
-                animationDuration: `${4 + Math.random() * 3}s`
+                top: `${i * 5}%`,
+                animationDelay: `${i * 1}s`,
+                animationDuration: `${15 + Math.random() * 8}s`
+              }}
+            />
+          ))}
+          
+          {/* Top-right to center */}
+          {Array.from({ length: 5 }, (_, i) => (
+            <div
+              key={`tr-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-bl from-purple-400/50 to-transparent animate-corner-to-center-tr transform -rotate-45 origin-top-right"
+              style={{
+                right: `${i * 5}%`,
+                top: `${i * 5}%`,
+                animationDelay: `${i * 1.2}s`,
+                animationDuration: `${16 + Math.random() * 9}s`
+              }}
+            />
+          ))}
+          
+          {/* Bottom-left to center */}
+          {Array.from({ length: 5 }, (_, i) => (
+            <div
+              key={`bl-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-tr from-cyan-400/50 to-transparent animate-corner-to-center-bl transform -rotate-45 origin-bottom-left"
+              style={{
+                left: `${i * 5}%`,
+                bottom: `${i * 5}%`,
+                animationDelay: `${i * 1.4}s`,
+                animationDuration: `${17 + Math.random() * 10}s`
+              }}
+            />
+          ))}
+          
+          {/* Bottom-right to center */}
+          {Array.from({ length: 5 }, (_, i) => (
+            <div
+              key={`br-line-${i}`}
+              className="absolute w-px h-full bg-gradient-to-tl from-pink-400/50 to-transparent animate-corner-to-center-br transform rotate-45 origin-bottom-right"
+              style={{
+                right: `${i * 5}%`,
+                bottom: `${i * 5}%`,
+                animationDelay: `${i * 1.6}s`,
+                animationDuration: `${18 + Math.random() * 11}s`
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Radial Pulse Lines - Creating depth effect */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={`pulse-line-${i}`}
+              className="absolute w-px h-screen bg-gradient-to-b from-transparent via-indigo-500/40 to-transparent animate-radial-pulse-inward"
+              style={{
+                transform: `rotate(${i * 30}deg)`,
+                transformOrigin: 'center',
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${10 + Math.random() * 5}s`
               }}
             />
           ))}
@@ -195,15 +268,10 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Enhanced animated grid overlay with color shift */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(99,102,241,0.3)_50%,transparent_100%)] animate-grid-sweep animate-color-shift" />
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_0%,rgba(168,85,247,0.2)_50%,transparent_100%)] animate-grid-sweep" style={{ animationDelay: '7s', animationDuration: '20s' }} />
-        </div>
-
         {/* Depth layers */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/30 via-transparent to-slate-900/30" />
       </div>
       
       <div className="container mx-auto px-6 text-center relative z-10">
