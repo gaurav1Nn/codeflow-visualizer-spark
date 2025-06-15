@@ -24,7 +24,7 @@ export class RepositoryHierarchyService {
       const hierarchicalNode: HierarchicalNode = {
         ...node,
         children: [],
-        isExpanded: node.depth <= 1, // Auto-expand only root level
+        isExpanded: false, // Start with all folders collapsed
         level: node.depth,
         parentId: node.parent
       };
@@ -67,8 +67,11 @@ export class RepositoryHierarchyService {
     
     const traverse = (nodes: HierarchicalNode[]) => {
       nodes.forEach(node => {
+        // Always show the node itself
         visible.push(node);
-        if (node.isExpanded && node.children) {
+        
+        // Only show children if the directory is expanded
+        if (node.isExpanded && node.children && node.type === 'directory') {
           traverse(node.children);
         }
       });
@@ -78,25 +81,32 @@ export class RepositoryHierarchyService {
     return visible;
   }
 
+  // Get only root level items (directories and files at the top level)
+  getRootLevelNodes(hierarchy: HierarchicalNode[]): HierarchicalNode[] {
+    return hierarchy.filter(node => node.level === 0);
+  }
+
   filterConnections(connections: DependencyConnection[], visibleNodes: HierarchicalNode[]): FilteredConnections {
     const visibleIds = new Set(visibleNodes.map(n => n.id));
     const relevantConnections = connections.filter(conn => 
       visibleIds.has(conn.source) && visibleIds.has(conn.target)
     );
 
+    // Show fewer connections initially, more when folders are expanded
+    const maxConnections = visibleNodes.length > 10 ? 2 : 5;
+
     // Prioritize connections by importance
     const primaryConnections = relevantConnections.filter(conn => {
-      // Show only direct parent-child imports and main app connections
       const isMainAppConnection = conn.source.includes('App.tsx') || conn.target.includes('App.tsx') ||
                                   conn.source.includes('main.tsx') || conn.target.includes('main.tsx');
       const isDirectImport = conn.strength >= 0.8;
       
       return isMainAppConnection || isDirectImport;
-    }).slice(0, 5); // Limit to 5 most important
+    }).slice(0, maxConnections);
 
     const secondaryConnections = relevantConnections.filter(conn => 
       !primaryConnections.includes(conn)
-    ).slice(0, 3); // Limit to 3 additional
+    ).slice(0, Math.max(1, Math.floor(maxConnections / 2)));
 
     return {
       primary: primaryConnections,
@@ -108,7 +118,7 @@ export class RepositoryHierarchyService {
   toggleNodeExpansion(hierarchy: HierarchicalNode[], nodeId: string): HierarchicalNode[] {
     const toggle = (nodes: HierarchicalNode[]): HierarchicalNode[] => {
       return nodes.map(node => {
-        if (node.id === nodeId) {
+        if (node.id === nodeId && node.type === 'directory') {
           return { ...node, isExpanded: !node.isExpanded };
         }
         if (node.children) {
@@ -142,6 +152,19 @@ export class RepositoryHierarchyService {
     };
 
     return expand(hierarchy);
+  }
+
+  // Collapse all nodes to show only root level
+  collapseAll(hierarchy: HierarchicalNode[]): HierarchicalNode[] {
+    const collapse = (nodes: HierarchicalNode[]): HierarchicalNode[] => {
+      return nodes.map(node => ({
+        ...node,
+        isExpanded: false,
+        children: node.children ? collapse(node.children) : undefined
+      }));
+    };
+
+    return collapse(hierarchy);
   }
 }
 

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,11 +64,11 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       const structure = await repositoryAnalyzer.analyzeRepository(owner, repo);
       setRepositoryStructure(structure);
       
-      // Build hierarchy from the structure
+      // Build hierarchy with all folders collapsed initially
       const hierarchicalNodes = repositoryHierarchy.buildHierarchy(structure.nodes);
       setHierarchy(hierarchicalNodes);
       
-      // Get initial visible nodes and connections
+      // Show only root level nodes initially
       updateVisibleNodes(hierarchicalNodes, structure.connections);
       
       console.log('✅ Repository structure and hierarchy built');
@@ -81,6 +80,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   }, [repository]);
 
   const updateVisibleNodes = (currentHierarchy: HierarchicalNode[], connections: DependencyConnection[]) => {
+    // Get visible nodes based on expansion state
     let visible = repositoryHierarchy.getVisibleNodes(currentHierarchy);
     
     // Apply search filter
@@ -89,6 +89,16 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         node.path.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      
+      // If searching, expand relevant paths
+      if (searchTerm && currentHierarchy.length > 0) {
+        const expandedHierarchy = repositoryHierarchy.expandPath(currentHierarchy, searchTerm);
+        setHierarchy(expandedHierarchy);
+        visible = repositoryHierarchy.getVisibleNodes(expandedHierarchy).filter(node => 
+          node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          node.path.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
     }
     
     setVisibleNodes(visible);
@@ -99,7 +109,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   };
 
   const handleNodeClick = useCallback((node: HierarchicalNode) => {
-    if (node.type === 'directory' && node.children) {
+    if (node.type === 'directory') {
       // Toggle directory expansion
       const newHierarchy = repositoryHierarchy.toggleNodeExpansion(hierarchy, node.id);
       setHierarchy(newHierarchy);
@@ -109,6 +119,17 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       setSelectedNode(node);
     }
   }, [hierarchy, repositoryStructure]);
+
+  const resetView = () => {
+    if (repositoryStructure) {
+      // Collapse all and show only root level
+      const freshHierarchy = repositoryHierarchy.collapseAll(hierarchy);
+      setHierarchy(freshHierarchy);
+      setSearchTerm('');
+      setSelectedNode(null);
+      updateVisibleNodes(freshHierarchy, repositoryStructure.connections);
+    }
+  };
 
   useEffect(() => {
     if (repository && !repositoryStructure) {
@@ -121,15 +142,6 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       updateVisibleNodes(hierarchy, repositoryStructure.connections);
     }
   }, [searchTerm, hierarchy, repositoryStructure]);
-
-  const resetView = () => {
-    if (repositoryStructure) {
-      const freshHierarchy = repositoryHierarchy.buildHierarchy(repositoryStructure.nodes);
-      setHierarchy(freshHierarchy);
-      setSearchTerm('');
-      setSelectedNode(null);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -250,23 +262,24 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         <div className="space-y-4">
           <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-white text-sm">View Status</CardTitle>
+              <CardTitle className="text-white text-sm">Navigation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <TreePine className="w-4 h-4 text-green-400" />
-                <span className="text-white font-medium">Hierarchical View</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}
-              </Badge>
               <div className="text-xs text-slate-400">
-                {visibleNodes.length} items visible
+                Click folders to expand/collapse their contents
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-slate-300">📁</span>
+                <span className="text-slate-400 text-xs">Collapsed folder</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-slate-300">📂</span>
+                <span className="text-slate-400 text-xs">Expanded folder</span>
               </div>
               <div className="flex items-center space-x-2 text-xs">
-                <span className="text-slate-400">Connections:</span>
-                <Badge variant={showConnections ? "default" : "secondary"} className="text-xs">
-                  {showConnections ? `${filteredConnections.primary.length + filteredConnections.secondary.length}` : "Hidden"}
+                <span className="text-slate-400">Showing:</span>
+                <Badge variant="outline" className="text-xs">
+                  {visibleNodes.length} of {hierarchy.length} items
                 </Badge>
               </div>
             </CardContent>
