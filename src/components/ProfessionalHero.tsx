@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -101,42 +100,14 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Reduced curved lines - now only 3 lines appearing one by one with 3-second intervals */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '5s' }}>
-          {Array.from({ length: 3 }, (_, i) => (
-            <svg
-              key={`curved-line-${i}`}
-              className="absolute bottom-0 w-full h-full animate-curved-float-fade"
-              style={{
-                animationDelay: `${5 + (i * 3)}s`,
-                animationDuration: `${25 + Math.random() * 10}s`
-              }}
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d={`M${10 + i * 20},100 Q${30 + i * 15},${70 - i * 8} ${50 + i * 10},${45 - i * 6} T${85 - i * 8},${25 + i * 4}`}
-                stroke={`rgba(${i % 3 === 0 ? '59, 130, 246' : i % 3 === 1 ? '147, 51, 234' : '34, 211, 238'}, 0.3)`}
-                strokeWidth="0.5"
-                fill="none"
-                className="animate-path-fade"
-                style={{
-                  animationDelay: `${5 + (i * 3)}s`,
-                  animationDuration: `${20 + Math.random() * 8}s`
-                }}
-              />
-            </svg>
-          ))}
-        </div>
-
-        {/* Reduced curved paths - now only 2 paths with 4-second intervals */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '8s' }}>
+        {/* Curved paths - starting later with longer intervals */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '12s' }}>
           {Array.from({ length: 2 }, (_, i) => (
             <svg
               key={`curved-path-${i}`}
               className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
               style={{
-                animationDelay: `${8 + (i * 4)}s`,
+                animationDelay: `${12 + (i * 6)}s`,
                 animationDuration: `${30 + Math.random() * 12}s`
               }}
               viewBox="0 0 100 100"
@@ -149,7 +120,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
                 fill="none"
                 className="animate-path-glow-fade"
                 style={{
-                  animationDelay: `${8 + (i * 4)}s`,
+                  animationDelay: `${12 + (i * 6)}s`,
                   animationDuration: `${22 + Math.random() * 10}s`
                 }}
               />
@@ -157,8 +128,8 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
           ))}
         </div>
 
-        {/* Reduced floating curved elements - now only 2 elements with 5-second intervals */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '12s' }}>
+        {/* Floating curved elements - appearing much later */}
+        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '18s' }}>
           {Array.from({ length: 2 }, (_, i) => (
             <div
               key={`curved-element-${i}`}
@@ -166,7 +137,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
               style={{
                 left: `${25 + Math.random() * 50}%`,
                 bottom: `${15 + Math.random() * 30}%`,
-                animationDelay: `${12 + (i * 5)}s`,
+                animationDelay: `${18 + (i * 8)}s`,
                 animationDuration: `${25 + Math.random() * 12}s`
               }}
             >
@@ -178,7 +149,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
                   fill="none"
                   className="animate-path-pulse-fade"
                   style={{
-                    animationDelay: `${12 + (i * 5)}s`,
+                    animationDelay: `${18 + (i * 8)}s`,
                     animationDuration: `${15 + Math.random() * 8}s`
                   }}
                 />
