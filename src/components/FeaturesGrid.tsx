@@ -1,6 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -17,127 +16,78 @@ import {
 } from 'lucide-react';
 
 export const FeaturesGrid = () => {
-  const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          gsap.fromTo(".feature-card", {
-            y: 60,
-            opacity: 0,
-            rotationY: 15
-          }, {
-            y: 0,
-            opacity: 1,
-            rotationY: 0,
-            duration: 1,
-            stagger: 0.15,
-            ease: "power3.out"
-          });
-        }
-      });
-    }, { threshold: 0.2 });
-
-    if (gridRef.current) {
-      observer.observe(gridRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   const features = [
     {
       icon: BarChart3,
       title: "Advanced Analytics",
-      description: "Deep insights into commit patterns, code complexity, and development trends with interactive charts and graphs.",
-      badge: "Pro",
-      color: "from-blue-500 to-blue-600",
-      bgColor: "from-blue-500/10 to-blue-600/20"
+      description: "Deep insights into commit patterns, code complexity, and development trends with interactive visualizations.",
+      badge: "Core"
     },
     {
       icon: GitBranch,
       title: "Branch Visualization",
-      description: "Stunning visual representations of your repository's branch structure and merge patterns.",
-      badge: "Popular",
-      color: "from-green-500 to-green-600",
-      bgColor: "from-green-500/10 to-green-600/20"
+      description: "Clear visual representations of your repository's branch structure and merge patterns.",
+      badge: "Popular"
     },
     {
       icon: Users,
-      title: "Contributor Analytics",
+      title: "Team Analytics",
       description: "Comprehensive analysis of team contributions, activity patterns, and collaboration insights.",
-      badge: "Team",
-      color: "from-purple-500 to-purple-600",
-      bgColor: "from-purple-500/10 to-purple-600/20"
+      badge: "Team"
     },
     {
       icon: FileText,
       title: "Code Intelligence",
       description: "AI-powered code analysis with quality metrics, complexity assessment, and improvement suggestions.",
-      badge: "AI",
-      color: "from-orange-500 to-orange-600",
-      bgColor: "from-orange-500/10 to-orange-600/20"
+      badge: "AI"
     },
     {
       icon: Shield,
-      title: "Security Scanning",
-      description: "Automated security vulnerability detection and compliance checking for enterprise-grade safety.",
-      badge: "Security",
-      color: "from-red-500 to-red-600",
-      bgColor: "from-red-500/10 to-red-600/20"
+      title: "Security Insights",
+      description: "Automated security vulnerability detection and compliance checking for enterprise safety.",
+      badge: "Security"
     },
     {
       icon: Brain,
       title: "Smart Recommendations",
-      description: "Machine learning-powered suggestions for code improvements, refactoring opportunities, and best practices.",
-      badge: "Smart",
-      color: "from-pink-500 to-pink-600",
-      bgColor: "from-pink-500/10 to-pink-600/20"
+      description: "Machine learning-powered suggestions for code improvements and best practices.",
+      badge: "Smart"
     },
     {
       icon: Globe,
-      title: "Multi-Platform Support",
-      description: "Seamless integration with GitHub, GitLab, Bitbucket, and other popular version control platforms.",
-      badge: "Universal",
-      color: "from-teal-500 to-teal-600",
-      bgColor: "from-teal-500/10 to-teal-600/20"
+      title: "Platform Support",
+      description: "Seamless integration with GitHub, GitLab, Bitbucket, and other version control platforms.",
+      badge: "Universal"
     },
     {
       icon: Clock,
-      title: "Real-time Monitoring",
-      description: "Live tracking of repository changes, automated analysis updates, and instant notification system.",
-      badge: "Live",
-      color: "from-indigo-500 to-indigo-600",
-      bgColor: "from-indigo-500/10 to-indigo-600/20"
+      title: "Real-time Updates",
+      description: "Live tracking of repository changes with automated analysis and instant notifications.",
+      badge: "Live"
     }
   ];
 
   return (
-    <div ref={gridRef} className="py-20 relative">
+    <div className="py-20 relative">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-16">
           <Badge 
             variant="secondary" 
-            className="bg-gradient-to-r from-green-500/20 to-blue-500/20 backdrop-blur-xl border-green-400/30 text-green-300 mb-6"
+            className="bg-secondary text-secondary-foreground border-border mb-6"
           >
             <Zap className="w-4 h-4 mr-2" />
-            Powerful Features
+            Platform Features
           </Badge>
           
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-              Everything You Need for
-            </span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+            Everything You Need for
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Repository Excellence
-            </span>
+            <span className="text-primary">Repository Excellence</span>
           </h2>
           
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            Discover the comprehensive suite of tools designed to transform how you understand and optimize your codebase
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Comprehensive tools designed to help you understand and optimize your codebase
           </p>
         </div>
 
@@ -146,42 +96,36 @@ export const FeaturesGrid = () => {
           {features.map((feature, index) => (
             <Card 
               key={index}
-              className={`feature-card group relative overflow-hidden bg-gradient-to-br ${feature.bgColor} backdrop-blur-xl border-slate-700/50 hover:border-slate-600/50 transition-all duration-500 hover:scale-105 cursor-pointer`}
+              className="glass-card hover:bg-card transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
             >
-              {/* Animated Background Glow */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-              
-              <CardHeader className="relative z-10 pb-4">
+              <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className="w-6 h-6 text-white" />
+                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors duration-300">
+                    <feature.icon className="w-6 h-6 text-primary" />
                   </div>
                   <Badge 
                     variant="secondary" 
-                    className={`bg-gradient-to-r ${feature.color} text-white text-xs px-2 py-1`}
+                    className="bg-primary/10 text-primary text-xs px-2 py-1 border border-primary/20"
                   >
                     {feature.badge}
                   </Badge>
                 </div>
                 
-                <CardTitle className="text-white text-lg font-semibold group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-200 group-hover:bg-clip-text transition-all duration-300">
+                <CardTitle className="text-foreground text-lg font-semibold">
                   {feature.title}
                 </CardTitle>
               </CardHeader>
               
-              <CardContent className="relative z-10 pt-0">
-                <p className="text-slate-300 text-sm leading-relaxed mb-4 group-hover:text-slate-200 transition-colors duration-300">
+              <CardContent className="pt-0">
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                   {feature.description}
                 </p>
                 
-                <div className="flex items-center text-sm font-medium text-slate-400 group-hover:text-slate-300 transition-colors duration-300">
+                <div className="flex items-center text-sm font-medium text-primary group-hover:text-primary/80 transition-colors duration-300">
                   <span>Learn more</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                 </div>
               </CardContent>
-              
-              {/* Hover Effect Border */}
-              <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left`} />
             </Card>
           ))}
         </div>
