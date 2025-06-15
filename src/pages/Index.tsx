@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { Header } from '@/components/Header';
@@ -5,7 +6,6 @@ import { GitHubIntegration } from '@/components/GitHubIntegration';
 import { ProfessionalHero } from '@/components/ProfessionalHero';
 import { StatsSection } from '@/components/StatsSection';
 import { FeaturesGrid } from '@/components/FeaturesGrid';
-import { Enhanced3DVisualization } from '@/components/Enhanced3DVisualization';
 
 const Index = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,14 +151,7 @@ const Index = () => {
         <FeaturesGrid />
       </div>
 
-      {/* New 3D Visualization Section */}
-      <div className="relative z-20 px-6 py-20">
-        <div className="container mx-auto max-w-7xl">
-          <Enhanced3DVisualization />
-        </div>
-      </div>
-
-      {/* Main Content */}
+      {/* Main Content - GitHubIntegration includes the 3D visualization */}
       <div className="main-content relative z-10 px-6 pb-20">
         <div className="container mx-auto max-w-7xl">
           <GitHubIntegration />
