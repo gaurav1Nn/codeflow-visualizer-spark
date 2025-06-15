@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -97,34 +98,6 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
             >
               <div className="w-1 h-1 bg-slate-300 rounded-full opacity-30" />
             </div>
-          ))}
-        </div>
-
-        {/* Curved paths - starting later with longer intervals */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '12s' }}>
-          {Array.from({ length: 2 }, (_, i) => (
-            <svg
-              key={`curved-path-${i}`}
-              className="absolute bottom-0 w-full h-full animate-curved-drift-fade"
-              style={{
-                animationDelay: `${12 + (i * 6)}s`,
-                animationDuration: `${30 + Math.random() * 12}s`
-              }}
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <path
-                d={`M${5 + i * 35},100 C${20 + i * 18},${85 - i * 6} ${40 + i * 20},${55 - i * 8} ${60 + i * 25},${35 - i * 6} S${85 - i * 15},${20 + i * 4} ${95 - i * 10},${15 + i * 3}`}
-                stroke={`rgba(${i % 2 === 0 ? '34, 211, 238' : '168, 85, 247'}, 0.25)`}
-                strokeWidth="0.8"
-                fill="none"
-                className="animate-path-glow-fade"
-                style={{
-                  animationDelay: `${12 + (i * 6)}s`,
-                  animationDuration: `${22 + Math.random() * 10}s`
-                }}
-              />
-            </svg>
           ))}
         </div>
 
