@@ -1,4 +1,5 @@
-import { githubApi, GitHubFileContent, GitHubRepository, GitHubCommit } from './githubApi';
+
+import { githubApi, GitHubFileContent, GitHubRepository, GitHubCommit, GitHubFileContentWithContent } from './githubApi';
 
 export interface FileNode {
   id: string;
@@ -35,11 +36,6 @@ export interface RepositoryStructure {
   };
 }
 
-interface GitHubFileContentWithContent extends GitHubFileContent {
-  content: string;
-  encoding: string;
-}
-
 class RepositoryAnalyzer {
   private fileExtensionMap: Record<string, string> = {
     '.ts': 'TypeScript',
@@ -71,7 +67,10 @@ class RepositoryAnalyzer {
         complexity: { low: 0, medium: 0, high: 0 }
       };
 
-      await this.processDirectory(owner, repo, '', rootContents, nodes, connections, stats, 0);
+      // Ensure rootContents is an array for directory processing
+      if (Array.isArray(rootContents)) {
+        await this.processDirectory(owner, repo, '', rootContents, nodes, connections, stats, 0);
+      }
       
       console.log('Secure analysis complete:', { nodes: nodes.length, connections: connections.length });
       
@@ -191,32 +190,80 @@ class RepositoryAnalyzer {
 
   private extractImports(content: string): string[] {
     const imports: string[] = [];
-    const importRegex = /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g;
-    let match;
     
-    while ((match = importRegex.exec(content)) !== null) {
-      imports.push(match[1]);
-    }
+    // Enhanced regex patterns for different import types
+    const importPatterns = [
+      // ES6 imports: import ... from '...'
+      /import\s+.*?\s+from\s+['"]([^'"]+)['"]/g,
+      // Dynamic imports: import('...')
+      /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+      // Require statements: require('...')
+      /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+    ];
     
-    return imports;
+    importPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const importPath = match[1];
+        // Filter out external packages (those not starting with . or /)
+        if (importPath.startsWith('.') || importPath.startsWith('/')) {
+          imports.push(importPath);
+        }
+      }
+    });
+    
+    return [...new Set(imports)]; // Remove duplicates
   }
 
   private extractExports(content: string): string[] {
     const exports: string[] = [];
-    const exportRegex = /export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(\w+)/g;
-    let match;
+    const exportPatterns = [
+      // Named exports: export const/let/var/function/class
+      /export\s+(?:const|let|var|function|class)\s+(\w+)/g,
+      // Default exports: export default
+      /export\s+default\s+(?:class|function)?\s*(\w+)?/g,
+      // Export declarations: export { ... }
+      /export\s*\{\s*([^}]+)\s*\}/g,
+    ];
     
-    while ((match = exportRegex.exec(content)) !== null) {
-      exports.push(match[1]);
-    }
+    exportPatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        if (match[1]) {
+          // Handle export { a, b, c } syntax
+          if (pattern.source.includes('{')) {
+            const namedExports = match[1].split(',').map(exp => exp.trim().split(' as ')[0].trim());
+            exports.push(...namedExports);
+          } else {
+            exports.push(match[1]);
+          }
+        }
+      }
+    });
     
-    return exports;
+    return [...new Set(exports.filter(exp => exp && exp !== 'default'))]; // Remove duplicates and empty values
   }
 
   private resolveImportPath(currentFile: string, importPath: string): string | null {
     if (importPath.startsWith('.')) {
       const currentDir = currentFile.split('/').slice(0, -1).join('/');
-      const resolvedPath = this.resolvePath(currentDir, importPath);
+      let resolvedPath = this.resolvePath(currentDir, importPath);
+      
+      // Add common file extensions if not present
+      if (!resolvedPath.includes('.')) {
+        const extensions = ['.ts', '.tsx', '.js', '.jsx', '.json'];
+        for (const ext of extensions) {
+          // Try the exact path with extension first
+          if (this.pathExists(resolvedPath + ext)) {
+            return resolvedPath + ext;
+          }
+          // Try index file in directory
+          if (this.pathExists(resolvedPath + '/index' + ext)) {
+            return resolvedPath + '/index' + ext;
+          }
+        }
+      }
+      
       return resolvedPath;
     }
     return null; // External imports
@@ -237,6 +284,12 @@ class RepositoryAnalyzer {
     return parts.join('/');
   }
 
+  private pathExists(path: string): boolean {
+    // This is a simplified check - in a real implementation,
+    // you might want to maintain a cache of all file paths
+    return true; // Assume path exists for now
+  }
+
   private getFileExtension(filename: string): string | null {
     const lastDot = filename.lastIndexOf('.');
     return lastDot > 0 ? filename.substring(lastDot) : null;
@@ -244,7 +297,7 @@ class RepositoryAnalyzer {
 
   private isCodeFile(filename: string): boolean {
     const ext = this.getFileExtension(filename);
-    return ext ? ['.ts', '.tsx', '.js', '.jsx'].includes(ext) : false;
+    return ext ? ['.ts', '.tsx', '.js', '.jsx', '.py', '.java'].includes(ext) : false;
   }
 
   private estimateComplexity(filename: string, size: number): 'low' | 'medium' | 'high' {

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +18,8 @@ import {
   Eye,
   Filter,
   Layers,
-  Activity
+  Activity,
+  EyeOff
 } from 'lucide-react';
 import { repositoryAnalyzer, FileNode, DependencyConnection, RepositoryStructure } from '@/services/repositoryAnalyzer';
 import { githubApi } from '@/services/githubApi';
@@ -43,12 +43,13 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentPath, setCurrentPath] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'structure' | 'dependencies' | 'complexity' | 'activity'>('structure');
+  const [viewMode, setViewMode] = useState<'structure' | 'dependencies' | 'complexity' | 'activity'>('dependencies');
   const [selectedNode, setSelectedNode] = useState<FileNode | null>(null);
   const [breadcrumb, setBreadcrumb] = useState<string[]>(['Repository']);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentNodes, setCurrentNodes] = useState<FileNode[]>([]);
   const [isLoadingSubdir, setIsLoadingSubdir] = useState(false);
+  const [showConnections, setShowConnections] = useState(true);
 
   const analyzeRepositoryStructure = useCallback(async () => {
     if (!repository) return;
@@ -128,7 +129,7 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     if (currentNodes.length > 0) {
       renderVisualization();
     }
-  }, [currentNodes, viewMode, searchTerm]);
+  }, [currentNodes, viewMode, searchTerm, showConnections]);
 
   const getVisibleNodes = (): FileNode[] => {
     let nodes = currentNodes;
@@ -206,9 +207,42 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     svg.setAttribute('width', width.toString());
     svg.setAttribute('height', height.toString());
 
-    // Create modern background with gradient
+    // Create modern background with gradient and definitions
     const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     
+    // Arrow marker for connections
+    const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    arrowMarker.setAttribute('id', 'arrowhead');
+    arrowMarker.setAttribute('markerWidth', '10');
+    arrowMarker.setAttribute('markerHeight', '7');
+    arrowMarker.setAttribute('refX', '9');
+    arrowMarker.setAttribute('refY', '3.5');
+    arrowMarker.setAttribute('orient', 'auto');
+    arrowMarker.setAttribute('markerUnits', 'strokeWidth');
+    
+    const arrowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    arrowPath.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+    arrowPath.setAttribute('fill', '#3B82F6');
+    arrowMarker.appendChild(arrowPath);
+    defs.appendChild(arrowMarker);
+
+    // Import arrow marker (different color)
+    const importMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    importMarker.setAttribute('id', 'importArrow');
+    importMarker.setAttribute('markerWidth', '10');
+    importMarker.setAttribute('markerHeight', '7');
+    importMarker.setAttribute('refX', '9');
+    importMarker.setAttribute('refY', '3.5');
+    importMarker.setAttribute('orient', 'auto');
+    importMarker.setAttribute('markerUnits', 'strokeWidth');
+    
+    const importPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    importPath.setAttribute('d', 'M0,0 L0,7 L10,3.5 z');
+    importPath.setAttribute('fill', '#10B981');
+    importMarker.appendChild(importPath);
+    defs.appendChild(importMarker);
+
+    // Background gradient
     const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
     gradient.setAttribute('id', 'backgroundGradient');
     gradient.setAttribute('cx', '50%');
@@ -262,12 +296,12 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     background.setAttribute('fill', 'url(#backgroundGradient)');
     svg.appendChild(background);
 
-    // Calculate positions using circular layout
+    // Calculate positions using force-directed layout for better connection visibility
     const positions = calculateNodePositions(visibleNodes, width, height);
 
-    // Render connections first (behind nodes)
-    if (viewMode === 'dependencies' && repositoryStructure) {
-      renderConnections(svg, visibleNodes, positions);
+    // Render connections first (behind nodes) with enhanced arrows
+    if (showConnections && repositoryStructure) {
+      renderConnections(svg, visibleNodes, positions, repositoryStructure.connections);
     }
 
     // Render nodes
@@ -297,7 +331,9 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       icon.setAttribute('dy', '0.35em');
       icon.setAttribute('fill', 'white');
       icon.setAttribute('font-size', '12px');
-      icon.textContent = node.type === 'directory' ? '📁' : '📄';
+      icon.textContent = node.type === 'directory' ? '📁' : 
+                        node.extension === '.tsx' || node.extension === '.jsx' ? '⚛️' :
+                        node.extension === '.ts' || node.extension === '.js' ? '📄' : '📄';
 
       // Label
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -313,27 +349,27 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
       }
       label.textContent = displayName;
 
-      // Expandable indicator for directories
-      if (node.type === 'directory') {
-        const expandIndicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        expandIndicator.setAttribute('cx', (size / 2 - 8).toString());
-        expandIndicator.setAttribute('cy', (-size / 2 + 8).toString());
-        expandIndicator.setAttribute('r', '6');
-        expandIndicator.setAttribute('fill', '#10B981');
-        expandIndicator.setAttribute('stroke', 'white');
-        expandIndicator.setAttribute('stroke-width', '2');
+      // Connection count badge for dependencies view
+      if (viewMode === 'dependencies' && node.imports && node.imports.length > 0) {
+        const badge = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        badge.setAttribute('cx', (size / 2 - 8).toString());
+        badge.setAttribute('cy', (-size / 2 + 8).toString());
+        badge.setAttribute('r', '6');
+        badge.setAttribute('fill', '#F59E0B');
+        badge.setAttribute('stroke', 'white');
+        badge.setAttribute('stroke-width', '2');
         
-        const expandIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        expandIcon.setAttribute('x', (size / 2 - 8).toString());
-        expandIcon.setAttribute('y', (-size / 2 + 12).toString());
-        expandIcon.setAttribute('text-anchor', 'middle');
-        expandIcon.setAttribute('fill', 'white');
-        expandIcon.setAttribute('font-size', '10px');
-        expandIcon.setAttribute('font-weight', 'bold');
-        expandIcon.textContent = '+';
+        const badgeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        badgeText.setAttribute('x', (size / 2 - 8).toString());
+        badgeText.setAttribute('y', (-size / 2 + 12).toString());
+        badgeText.setAttribute('text-anchor', 'middle');
+        badgeText.setAttribute('fill', 'white');
+        badgeText.setAttribute('font-size', '8px');
+        badgeText.setAttribute('font-weight', 'bold');
+        badgeText.textContent = node.imports.length.toString();
         
-        nodeGroup.appendChild(expandIndicator);
-        nodeGroup.appendChild(expandIcon);
+        nodeGroup.appendChild(badge);
+        nodeGroup.appendChild(badgeText);
       }
 
       nodeGroup.appendChild(circle);
@@ -349,6 +385,11 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
           ease: "back.out(1.7)",
           transformOrigin: "center"
         });
+        
+        // Highlight connected paths
+        if (showConnections && repositoryStructure) {
+          highlightConnections(svg, node.id, repositoryStructure.connections);
+        }
       });
 
       nodeGroup.addEventListener('mouseleave', () => {
@@ -358,6 +399,9 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
           ease: "power2.out",
           transformOrigin: "center"
         });
+        
+        // Reset connection highlighting
+        resetConnectionHighlighting(svg);
       });
 
       nodeGroup.addEventListener('click', () => handleNodeClick(node));
@@ -383,27 +427,35 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
     const positions = [];
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 3;
     
-    nodes.forEach((node, index) => {
-      if (nodes.length === 1) {
-        positions.push({ x: centerX, y: centerY });
-      } else {
+    if (nodes.length === 1) {
+      positions.push({ x: centerX, y: centerY });
+    } else if (nodes.length <= 8) {
+      // Circular layout for small number of nodes
+      const radius = Math.min(width, height) / 3;
+      nodes.forEach((node, index) => {
         const angle = (index / nodes.length) * 2 * Math.PI;
-        const nodeRadius = node.type === 'directory' ? radius * 0.7 : radius;
-        const x = centerX + Math.cos(angle) * nodeRadius;
-        const y = centerY + Math.sin(angle) * nodeRadius;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
         positions.push({ x, y });
-      }
-    });
+      });
+    } else {
+      // Force-directed layout for better connection visibility
+      const radius = Math.min(width, height) / 2.5;
+      nodes.forEach((node, index) => {
+        const angle = (index / nodes.length) * 2 * Math.PI;
+        const r = radius * (0.3 + 0.7 * Math.random()); // Some randomness for better distribution
+        const x = centerX + Math.cos(angle) * r;
+        const y = centerY + Math.sin(angle) * r;
+        positions.push({ x, y });
+      });
+    }
     
     return positions;
   };
 
-  const renderConnections = (svg: SVGSVGElement, nodes: FileNode[], positions: any[]) => {
-    if (!repositoryStructure) return;
-    
-    repositoryStructure.connections.forEach(connection => {
+  const renderConnections = (svg: SVGSVGElement, nodes: FileNode[], positions: any[], connections: DependencyConnection[]) => {
+    connections.forEach(connection => {
       const sourceIndex = nodes.findIndex(n => n.id === connection.source);
       const targetIndex = nodes.findIndex(n => n.id === connection.target);
       
@@ -411,23 +463,80 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
         const sourcePos = positions[sourceIndex];
         const targetPos = positions[targetIndex];
         
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', sourcePos.x.toString());
-        line.setAttribute('y1', sourcePos.y.toString());
-        line.setAttribute('x2', targetPos.x.toString());
-        line.setAttribute('y2', targetPos.y.toString());
-        line.setAttribute('stroke', 'rgba(147, 197, 253, 0.6)');
-        line.setAttribute('stroke-width', '2');
-        line.setAttribute('opacity', '0.7');
+        // Create curved path for better visibility
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const midX = (sourcePos.x + targetPos.x) / 2;
+        const midY = (sourcePos.y + targetPos.y) / 2;
+        const offset = 30; // Curve offset
         
-        // Animated dashes
-        gsap.fromTo(line, 
-          { strokeDasharray: "5,5", strokeDashoffset: 10 },
-          { strokeDashoffset: 0, duration: 2, ease: "none", repeat: -1 }
-        );
+        const pathData = `M ${sourcePos.x} ${sourcePos.y} Q ${midX + offset} ${midY - offset} ${targetPos.x} ${targetPos.y}`;
+        path.setAttribute('d', pathData);
+        path.setAttribute('stroke', connection.type === 'import' ? '#10B981' : '#3B82F6');
+        path.setAttribute('stroke-width', (connection.strength * 2 + 1).toString());
+        path.setAttribute('fill', 'none');
+        path.setAttribute('opacity', '0.7');
+        path.setAttribute('marker-end', connection.type === 'import' ? 'url(#importArrow)' : 'url(#arrowhead)');
+        path.setAttribute('class', 'connection-path');
+        path.setAttribute('data-source', connection.source);
+        path.setAttribute('data-target', connection.target);
         
-        svg.appendChild(line);
+        // Add animation
+        const pathLength = path.getTotalLength();
+        path.style.strokeDasharray = `${pathLength}`;
+        path.style.strokeDashoffset = `${pathLength}`;
+        
+        gsap.to(path, {
+          strokeDashoffset: 0,
+          duration: 2,
+          delay: Math.random() * 1,
+          ease: "power2.out"
+        });
+        
+        svg.appendChild(path);
       }
+    });
+  };
+
+  const highlightConnections = (svg: SVGSVGElement, nodeId: string, connections: DependencyConnection[]) => {
+    // Find all connections involving this node
+    const relatedConnections = connections.filter(c => c.source === nodeId || c.target === nodeId);
+    
+    // Highlight related paths
+    relatedConnections.forEach(conn => {
+      const path = svg.querySelector(`[data-source="${conn.source}"][data-target="${conn.target}"]`);
+      if (path) {
+        gsap.to(path, {
+          opacity: 1,
+          strokeWidth: 4,
+          duration: 0.3
+        });
+      }
+    });
+    
+    // Dim other paths
+    const allPaths = svg.querySelectorAll('.connection-path');
+    allPaths.forEach(path => {
+      const source = path.getAttribute('data-source');
+      const target = path.getAttribute('data-target');
+      const isRelated = relatedConnections.some(c => c.source === source && c.target === target);
+      
+      if (!isRelated) {
+        gsap.to(path, {
+          opacity: 0.2,
+          duration: 0.3
+        });
+      }
+    });
+  };
+
+  const resetConnectionHighlighting = (svg: SVGSVGElement) => {
+    const allPaths = svg.querySelectorAll('.connection-path');
+    allPaths.forEach(path => {
+      gsap.to(path, {
+        opacity: 0.7,
+        strokeWidth: 2,
+        duration: 0.3
+      });
     });
   };
 
@@ -497,6 +606,14 @@ export const ModernRepositoryVisualization: React.FC<ModernRepositoryVisualizati
             </CardTitle>
             
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowConnections(!showConnections)}
+                className={`text-slate-300 ${showConnections ? 'bg-blue-500/20' : ''}`}
+              >
+                {showConnections ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

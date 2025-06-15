@@ -55,6 +55,11 @@ export interface GitHubFileContent {
   download_url?: string;
 }
 
+export interface GitHubFileContentWithContent extends GitHubFileContent {
+  content: string;
+  encoding: string;
+}
+
 export interface GitHubRateLimit {
   remaining: number | null;
   reset: number | null;
@@ -109,7 +114,7 @@ class GitHubApiService {
     return this.callGitHubApi('/repos/{owner}/{repo}/contributors', owner, repo);
   }
 
-  async getRepositoryContents(owner: string, repo: string, path = ''): Promise<GitHubFileContent[]> {
+  async getRepositoryContents(owner: string, repo: string, path = ''): Promise<GitHubFileContent[] | GitHubFileContentWithContent> {
     return this.callGitHubApi(`/repos/{owner}/{repo}/contents/${path}`, owner, repo);
   }
 
