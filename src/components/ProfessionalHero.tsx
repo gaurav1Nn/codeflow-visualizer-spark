@@ -33,33 +33,66 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
 
   return (
     <div className="relative py-32 md:py-40 overflow-hidden">
-      {/* Animated diagonal lines background */}
+      {/* Dynamic animated lines background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
-        <div className="absolute inset-0 opacity-30">
-          {/* Diagonal lines */}
+        {/* Moving diagonal lines */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              key={`moving-${i}`}
+              className="absolute h-full w-px bg-gradient-to-b from-transparent via-blue-500/30 to-transparent animate-diagonal-move opacity-60"
+              style={{
+                left: `${i * 15}%`,
+                animationDelay: `${i * 0.8}s`,
+                animationDuration: '8s'
+              }}
+            />
+          ))}
+          {Array.from({ length: 6 }, (_, i) => (
+            <div
+              key={`moving-reverse-${i}`}
+              className="absolute h-full w-px bg-gradient-to-b from-transparent via-purple-500/40 to-transparent animate-diagonal-move-reverse opacity-50"
+              style={{
+                left: `${i * 20 + 10}%`,
+                animationDelay: `${i * 1.2}s`,
+                animationDuration: '10s'
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Static accent lines */}
+        <div className="absolute inset-0 opacity-20">
           {Array.from({ length: 12 }, (_, i) => (
             <div
-              key={i}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-600/50 to-transparent transform rotate-12 animate-pulse"
+              key={`static-${i}`}
+              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-600/50 to-transparent transform rotate-12"
               style={{
                 left: `${i * 10}%`,
-                animationDelay: `${i * 0.2}s`,
-                animationDuration: '3s'
               }}
             />
           ))}
-          {/* Additional diagonal lines in opposite direction */}
-          {Array.from({ length: 12 }, (_, i) => (
+        </div>
+
+        {/* Floating particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 20 }, (_, i) => (
             <div
-              key={`reverse-${i}`}
-              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-600/30 to-transparent transform -rotate-12 animate-pulse"
+              key={`particle-${i}`}
+              className="absolute w-1 h-1 bg-blue-400/60 rounded-full animate-float-particle"
               style={{
-                left: `${i * 10 + 5}%`,
-                animationDelay: `${i * 0.3}s`,
-                animationDuration: '4s'
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                animationDuration: `${3 + Math.random() * 4}s`
               }}
             />
           ))}
+        </div>
+
+        {/* Animated grid overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.1)_50%,transparent_100%)] animate-grid-sweep" />
         </div>
       </div>
       

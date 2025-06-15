@@ -113,31 +113,78 @@
   }
 }
 
-/* Custom animations for diagonal lines */
+/* Enhanced dynamic line animations */
 @keyframes diagonal-move {
   0% {
-    transform: translateX(-100px) rotate(12deg);
+    transform: translateX(-200px) translateY(-100px) rotate(25deg);
     opacity: 0;
   }
-  50% {
-    opacity: 0.5;
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
   }
   100% {
-    transform: translateX(100px) rotate(12deg);
+    transform: translateX(200vw) translateY(100px) rotate(25deg);
     opacity: 0;
   }
 }
 
 @keyframes diagonal-move-reverse {
   0% {
-    transform: translateX(100px) rotate(-12deg);
+    transform: translateX(100vw) translateY(-100px) rotate(-25deg);
     opacity: 0;
   }
-  50% {
-    opacity: 0.3;
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
   }
   100% {
-    transform: translateX(-100px) rotate(-12deg);
+    transform: translateX(-200px) translateY(100px) rotate(-25deg);
     opacity: 0;
   }
+}
+
+@keyframes float-particle {
+  0% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0.3;
+  }
+}
+
+@keyframes grid-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100vw);
+  }
+}
+
+/* Animation classes */
+.animate-diagonal-move {
+  animation: diagonal-move linear infinite;
+}
+
+.animate-diagonal-move-reverse {
+  animation: diagonal-move-reverse linear infinite;
+}
+
+.animate-float-particle {
+  animation: float-particle ease-in-out infinite;
+}
+
+.animate-grid-sweep {
+  animation: grid-sweep 15s linear infinite;
 }
