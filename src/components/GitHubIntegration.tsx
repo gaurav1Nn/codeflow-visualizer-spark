@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { gsap } from 'gsap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,11 @@ import {
   Lock
 } from 'lucide-react';
 
-export const GitHubIntegration = () => {
+interface GitHubIntegrationRef {
+  analyzeRepository: (url: string) => void;
+}
+
+export const GitHubIntegration = forwardRef<GitHubIntegrationRef>((props, ref) => {
   const [repoUrl, setRepoUrl] = useState('');
   const { data, isLoading, error, analyzeRepository, progress } = useGitHubData();
   const { toast } = useToast();
@@ -28,6 +32,13 @@ export const GitHubIntegration = () => {
   const inputCardRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [rateLimit, setRateLimit] = useState(githubApi.getRateLimit());
+
+  useImperativeHandle(ref, () => ({
+    analyzeRepository: (url: string) => {
+      setRepoUrl(url);
+      handleAnalyzeRepo(url);
+    }
+  }));
 
   useEffect(() => {
     // Enhanced entrance animation
@@ -129,7 +140,9 @@ export const GitHubIntegration = () => {
     }
   }, [isLoading]);
 
-  const handleAnalyzeRepo = async () => {
+  const handleAnalyzeRepo = async (urlToAnalyze?: string) => {
+    const urlToUse = urlToAnalyze || repoUrl;
+    
     // Button press animation
     gsap.to('.analyze-btn', {
       scale: 0.95,
@@ -139,7 +152,7 @@ export const GitHubIntegration = () => {
       ease: "power2.inOut"
     });
 
-    await analyzeRepository(repoUrl);
+    await analyzeRepository(urlToUse);
     
     // Update rate limit after analysis
     setRateLimit(githubApi.getRateLimit());
@@ -236,7 +249,7 @@ export const GitHubIntegration = () => {
                 <Code2 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors duration-300" />
               </div>
               <Button
-                onClick={handleAnalyzeRepo}
+                onClick={() => handleAnalyzeRepo()}
                 disabled={isLoading || !repoUrl.trim()}
                 className="analyze-btn bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
               >
@@ -320,4 +333,6 @@ export const GitHubIntegration = () => {
       )}
     </div>
   );
-};
+});
+
+GitHubIntegration.displayName = 'GitHubIntegration';

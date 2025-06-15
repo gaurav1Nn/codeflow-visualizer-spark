@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -7,7 +7,30 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-export const ProfessionalHero = () => {
+interface ProfessionalHeroProps {
+  onAnalyzeRepo?: (repoUrl: string) => void;
+}
+
+export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRepo }) => {
+  const [repoUrl, setRepoUrl] = useState('');
+
+  const handleAnalyzeClick = () => {
+    if (repoUrl.trim() && onAnalyzeRepo) {
+      onAnalyzeRepo(repoUrl);
+      // Scroll to the analysis section
+      const analysisSection = document.getElementById('github-analysis');
+      if (analysisSection) {
+        analysisSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAnalyzeClick();
+    }
+  };
+
   return (
     <div className="relative py-32 md:py-40 overflow-hidden">
       {/* Animated diagonal lines background */}
@@ -65,13 +88,18 @@ export const ProfessionalHero = () => {
               <input
                 type="text"
                 placeholder="Paste your GitHub repo link here"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                onKeyPress={handleKeyPress}
                 className="flex-1 bg-transparent text-white placeholder-slate-400 text-lg outline-none w-full"
               />
             </div>
             
             <Button 
               size="lg"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105"
+              onClick={handleAnalyzeClick}
+              disabled={!repoUrl.trim()}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
             >
               <ArrowRight className="w-5 h-5" />
             </Button>
