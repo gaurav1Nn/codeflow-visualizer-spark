@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,169 +33,47 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
 
   return (
     <div className="relative py-32 md:py-40 overflow-hidden">
-      {/* Optimized gradient background with slower fade-in */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 animate-gradient-fade-in">
-        
-        {/* Layered gradient backgrounds with extended delays */}
-        <div className="absolute inset-0 opacity-30 animate-stagger-fade" style={{ animationDelay: '1s' }}>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-blue-500/15 via-purple-500/20 to-pink-500/15 animate-parallax-drift" />
-        </div>
-        <div className="absolute inset-0 opacity-20 animate-stagger-fade" style={{ animationDelay: '1.5s' }}>
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-cyan-500/10 via-indigo-500/15 to-teal-500/10 animate-parallax-drift" style={{ animationDelay: '8s', animationDuration: '25s' }} />
-        </div>
-
-        {/* Reduced hero starry effects with longer delays */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
-          {Array.from({ length: 15 }, (_, i) => (
-            <div
-              key={`hero-star-particle-${i}`}
-              className="absolute w-0.5 h-0.5 bg-white rounded-full animate-float-particle opacity-40"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${2 + (i * 0.8)}s`,
-                animationDuration: `${12 + Math.random() * 6}s`
-              }}
+      {/* Clean gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
+        {/* Subtle curved accent lines */}
+        <div className="absolute inset-0">
+          <svg className="absolute top-20 right-20 w-96 h-96 opacity-20" viewBox="0 0 400 400">
+            <path
+              d="M50,200 Q200,50 350,200 Q200,350 50,200"
+              stroke="url(#gradient1)"
+              strokeWidth="2"
+              fill="none"
             />
-          ))}
+            <defs>
+              <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          
+          <svg className="absolute bottom-20 left-20 w-80 h-80 opacity-15" viewBox="0 0 320 320">
+            <path
+              d="M40,160 Q160,40 280,160 Q160,280 40,160"
+              stroke="url(#gradient2)"
+              strokeWidth="2"
+              fill="none"
+            />
+            <defs>
+              <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#EC4899" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.5" />
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-
-        {/* Reduced glowing orbs with extended delays */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '3s' }}>
-          {Array.from({ length: 6 }, (_, i) => (
-            <div
-              key={`hero-glow-orb-${i}`}
-              className="absolute animate-orb-glow"
-              style={{
-                left: `${20 + Math.random() * 60}%`,
-                top: `${20 + Math.random() * 60}%`,
-                animationDelay: `${3 + (i * 2.5)}s`,
-                animationDuration: `${15 + Math.random() * 8}s`
-              }}
-            >
-              <div 
-                className={`w-1.5 h-1.5 rounded-full ${
-                  i % 3 === 0 ? 'bg-blue-400/60' : 
-                  i % 3 === 1 ? 'bg-purple-400/60' : 'bg-pink-400/60'
-                }`}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Reduced medium particles with longer delays */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '4s' }}>
-          {Array.from({ length: 8 }, (_, i) => (
-            <div
-              key={`hero-medium-particle-${i}`}
-              className="absolute animate-large-particle-drift"
-              style={{
-                left: `${10 + Math.random() * 80}%`,
-                top: `${10 + Math.random() * 80}%`,
-                animationDelay: `${4 + (i * 3)}s`,
-                animationDuration: `${18 + Math.random() * 10}s`
-              }}
-            >
-              <div className="w-1 h-1 bg-slate-300 rounded-full opacity-30" />
-            </div>
-          ))}
-        </div>
-
-        {/* Enhanced bubble effects in hero section */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '2s' }}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <div
-              key={`hero-bubble-${i}`}
-              className="absolute animate-pulse"
-              style={{
-                left: `${10 + Math.random() * 80}%`,
-                top: `${10 + Math.random() * 80}%`,
-                animationDelay: `${2 + (i * 0.8)}s`,
-                animationDuration: `${5 + Math.random() * 3}s`
-              }}
-            >
-              <div 
-                className={`w-6 h-6 rounded-full ${
-                  i % 4 === 0 ? 'bg-cyan-400/50' : 
-                  i % 4 === 1 ? 'bg-violet-400/50' : 
-                  i % 4 === 2 ? 'bg-pink-400/45' : 'bg-blue-400/45'
-                }`}
-                style={{
-                  boxShadow: `0 0 35px ${
-                    i % 4 === 0 ? 'rgba(34, 211, 238, 0.5)' : 
-                    i % 4 === 1 ? 'rgba(139, 92, 246, 0.5)' : 
-                    i % 4 === 2 ? 'rgba(236, 72, 153, 0.5)' : 'rgba(59, 130, 246, 0.5)'
-                  }`
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Additional floating bubble layer in hero */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '4s' }}>
-          {Array.from({ length: 8 }, (_, i) => (
-            <div
-              key={`hero-floating-bubble-${i}`}
-              className="absolute animate-orb-glow"
-              style={{
-                left: `${15 + Math.random() * 70}%`,
-                top: `${15 + Math.random() * 70}%`,
-                animationDelay: `${4 + (i * 1.5)}s`,
-                animationDuration: `${10 + Math.random() * 5}s`
-              }}
-            >
-              <div 
-                className={`w-7 h-7 rounded-full ${
-                  i % 2 === 0 ? 'bg-indigo-400/40' : 'bg-emerald-400/40'
-                }`}
-                style={{
-                  boxShadow: `0 0 40px ${
-                    i % 2 === 0 ? 'rgba(99, 102, 241, 0.6)' : 'rgba(16, 185, 129, 0.6)'
-                  }`
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Floating curved elements - appearing much later */}
-        <div className="absolute inset-0 animate-stagger-fade" style={{ animationDelay: '18s' }}>
-          {Array.from({ length: 2 }, (_, i) => (
-            <div
-              key={`curved-element-${i}`}
-              className="absolute animate-curved-float"
-              style={{
-                left: `${25 + Math.random() * 50}%`,
-                bottom: `${15 + Math.random() * 30}%`,
-                animationDelay: `${18 + (i * 8)}s`,
-                animationDuration: `${25 + Math.random() * 12}s`
-              }}
-            >
-              <svg width="40" height="25" viewBox="0 0 40 25">
-                <path
-                  d="M5,20 Q20,5 35,20"
-                  stroke={`rgba(${i % 2 === 0 ? '59, 130, 246' : '147, 51, 234'}, 0.4)`}
-                  strokeWidth="1"
-                  fill="none"
-                  className="animate-path-pulse-fade"
-                  style={{
-                    animationDelay: `${18 + (i * 8)}s`,
-                    animationDuration: `${15 + Math.random() * 8}s`
-                  }}
-                />
-              </svg>
-            </div>
-          ))}
-        </div>
-
-        {/* Optimized depth layers */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30 animate-gradient-fade-in" style={{ animationDelay: '0.5s' }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent animate-gradient-fade-in" style={{ animationDelay: '1s' }} />
+        
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-slate-900/30" />
       </div>
       
-      {/* Main content with optimized delay */}
-      <div className="container mx-auto px-6 text-center relative z-10 animate-stagger-fade" style={{ animationDelay: '0.8s' }}>
+      {/* Main content */}
+      <div className="container mx-auto px-6 text-center relative z-10">
         {/* Main Title */}
         <div className="mb-12">
           <h1 className="text-6xl md:text-8xl font-bold leading-tight mb-8 text-white drop-shadow-2xl">
@@ -205,14 +84,14 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
         </div>
 
         {/* Subtitle */}
-        <div className="mb-16 animate-stagger-fade" style={{ animationDelay: '1.2s' }}>
+        <div className="mb-16">
           <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
             Visualize, understand, and edit GitHub repositories instantly.
           </p>
         </div>
 
         {/* GitHub Input Section */}
-        <div className="mb-8 max-w-3xl mx-auto animate-stagger-fade" style={{ animationDelay: '1.6s' }}>
+        <div className="mb-8 max-w-3xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
             <div className="flex items-center flex-1 w-full">
               <Github className="w-6 h-6 text-slate-400 mr-4 flex-shrink-0" />
@@ -238,7 +117,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({ onAnalyzeRep
         </div>
 
         {/* Additional Info */}
-        <div className="text-slate-400 text-sm animate-stagger-fade" style={{ animationDelay: '2s' }}>
+        <div className="text-slate-400 text-sm">
           Free to use • No registration required • Works with public repositories
         </div>
       </div>
