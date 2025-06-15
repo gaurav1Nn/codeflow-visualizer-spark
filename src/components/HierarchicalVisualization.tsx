@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { HierarchicalNode, FilteredConnections } from '@/services/repositoryHierarchy';
@@ -143,11 +142,11 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     const positions: Array<{ x: number; y: number }> = [];
     const centerX = width / 2;
     const centerY = height / 2;
-    const padding = 60;
+    const padding = 80;
     
-    // Improved layout for fewer nodes with better spacing
-    const directories = nodes.filter(n => n.type === 'directory');
-    const files = nodes.filter(n => n.type === 'file');
+    // Show root level nodes in a cleaner circular layout
+    const rootNodes = nodes.filter(n => n.level === 0);
+    const childNodes = nodes.filter(n => n.level > 0);
     
     let positionIndex = 0;
     const usedPositions: Array<{ x: number; y: number; radius: number }> = [];
@@ -155,14 +154,14 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     const checkCollision = (x: number, y: number, radius: number) => {
       return usedPositions.some(pos => {
         const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
-        return distance < (radius + pos.radius + 30); // More spacing
+        return distance < (radius + pos.radius + 50);
       });
     };
     
     const findValidPosition = (baseX: number, baseY: number, radius: number) => {
-      for (let attempt = 0; attempt < 20; attempt++) {
-        const angle = (attempt / 20) * 2 * Math.PI;
-        const offset = attempt * 20;
+      for (let attempt = 0; attempt < 25; attempt++) {
+        const angle = (attempt / 25) * 2 * Math.PI;
+        const offset = attempt * 25;
         const x = Math.max(padding + radius, Math.min(width - padding - radius, baseX + Math.cos(angle) * offset));
         const y = Math.max(padding + radius, Math.min(height - padding - radius, baseY + Math.sin(angle) * offset));
         
@@ -175,27 +174,49 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
       return { x: baseX, y: baseY };
     };
     
-    // Position directories first with larger spacing
-    directories.forEach((node, index) => {
-      const angle = (index / Math.max(directories.length, 1)) * 2 * Math.PI;
-      const radius = Math.min(width, height) * 0.25; // Closer to center
-      const baseX = centerX + Math.cos(angle) * radius;
-      const baseY = centerY + Math.sin(angle) * radius;
-      const nodeRadius = 40; // Larger folders
-      
-      const position = findValidPosition(baseX, baseY, nodeRadius);
+    // Position root nodes in a balanced layout
+    if (rootNodes.length === 1) {
+      // Single root node in center
+      const position = { x: centerX, y: centerY };
       positions[positionIndex] = position;
+      usedPositions.push({ x: centerX, y: centerY, radius: 50 });
       positionIndex++;
-    });
+    } else {
+      // Multiple root nodes in circle
+      rootNodes.forEach((node, index) => {
+        const angle = (index / rootNodes.length) * 2 * Math.PI;
+        const radius = Math.min(width, height) * 0.2;
+        const baseX = centerX + Math.cos(angle) * radius;
+        const baseY = centerY + Math.sin(angle) * radius;
+        const nodeRadius = node.type === 'directory' ? 50 : 30;
+        
+        const position = findValidPosition(baseX, baseY, nodeRadius);
+        positions[positionIndex] = position;
+        positionIndex++;
+      });
+    }
     
-    // Position files around directories
-    files.forEach((node, index) => {
-      const angle = ((index + directories.length) / Math.max(nodes.length, 1)) * 2 * Math.PI;
-      const radius = Math.min(width, height) * 0.35;
-      const baseX = centerX + Math.cos(angle) * radius;
-      const baseY = centerY + Math.sin(angle) * radius;
-      const nodeRadius = 25;
+    // Position child nodes around their parents or in outer ring
+    childNodes.forEach((node, index) => {
+      const parentIndex = rootNodes.findIndex(parent => parent.id === node.parentId);
+      let baseX: number, baseY: number;
       
+      if (parentIndex >= 0 && positions[parentIndex]) {
+        // Position around parent
+        const parent = positions[parentIndex];
+        const childAngle = (index / childNodes.length) * 2 * Math.PI;
+        const childRadius = 100;
+        baseX = parent.x + Math.cos(childAngle) * childRadius;
+        baseY = parent.y + Math.sin(childAngle) * childRadius;
+      } else {
+        // Position in outer ring
+        const angle = (index / Math.max(childNodes.length, 1)) * 2 * Math.PI;
+        const radius = Math.min(width, height) * 0.35;
+        baseX = centerX + Math.cos(angle) * radius;
+        baseY = centerY + Math.sin(angle) * radius;
+      }
+      
+      const nodeRadius = node.type === 'directory' ? 35 : 25;
       const position = findValidPosition(baseX, baseY, nodeRadius);
       positions[positionIndex] = position;
       positionIndex++;
@@ -206,13 +227,14 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
 
   const renderBubbleNode = (svg: SVGSVGElement, node: HierarchicalNode, position: { x: number; y: number }, index: number) => {
     const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    nodeGroup.setAttribute('transform', `translate(${position.x}, ${position.y})`);
+    nodeGroup.setAttribute('transform', `translate(${position.x.toString()}, ${position.y.toString()})`);
     nodeGroup.style.cursor = 'pointer';
 
-    // Calculate size based on type and expanded state
+    // Calculate size based on type and level
     const baseSize = node.type === 'directory' ? 
-      (node.isExpanded ? 45 : 40) : 25;
-    const radius = baseSize;
+      (node.level === 0 ? 50 : 35) : 
+      (node.level === 0 ? 30 : 25);
+    const radius = node.isExpanded ? baseSize + 5 : baseSize;
 
     // Create main bubble
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -226,12 +248,12 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     // Add expansion indicator for directories
     if (node.type === 'directory') {
       const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      indicator.setAttribute('r', (radius + 5).toString());
+      indicator.setAttribute('r', (radius + 6).toString());
       indicator.setAttribute('fill', 'none');
       indicator.setAttribute('stroke', node.isExpanded ? '#10B981' : '#64748B');
-      indicator.setAttribute('stroke-width', '1');
-      indicator.setAttribute('opacity', '0.6');
-      indicator.setAttribute('stroke-dasharray', node.isExpanded ? '0' : '5,5');
+      indicator.setAttribute('stroke-width', '2');
+      indicator.setAttribute('opacity', '0.7');
+      indicator.setAttribute('stroke-dasharray', node.isExpanded ? '0' : '8,4');
       nodeGroup.appendChild(indicator);
     }
 
@@ -240,56 +262,115 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     icon.setAttribute('text-anchor', 'middle');
     icon.setAttribute('dominant-baseline', 'central');
     icon.setAttribute('fill', 'white');
-    icon.setAttribute('font-size', node.type === 'directory' ? '18px' : '14px');
+    icon.setAttribute('font-size', node.level === 0 ? '20px' : '16px');
     icon.setAttribute('font-family', 'system-ui');
     icon.textContent = getNodeIcon(node);
 
-    // Enhanced label
+    // Enhanced label with better positioning
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('dominant-baseline', 'central');
-    label.setAttribute('dy', radius + 18);
+    label.setAttribute('dy', (radius + 20).toString());
     label.setAttribute('fill', 'white');
-    label.setAttribute('font-size', '9px');
+    label.setAttribute('font-size', node.level === 0 ? '11px' : '10px');
     label.setAttribute('font-weight', '600');
     label.setAttribute('font-family', 'system-ui');
-    const maxLength = 10;
+    const maxLength = node.level === 0 ? 12 : 10;
     const displayName = node.name.length > maxLength ? node.name.slice(0, maxLength) + '…' : node.name;
     label.textContent = displayName;
+
+    // Add child count indicator for expanded directories
+    if (node.type === 'directory' && node.isExpanded && node.children && node.children.length > 0) {
+      const childCount = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      childCount.setAttribute('text-anchor', 'middle');
+      childCount.setAttribute('dominant-baseline', 'central');
+      childCount.setAttribute('dy', (radius + 35).toString());
+      childCount.setAttribute('fill', '#10B981');
+      childCount.setAttribute('font-size', '8px');
+      childCount.setAttribute('font-weight', '500');
+      childCount.setAttribute('font-family', 'system-ui');
+      childCount.textContent = `${node.children.length} items`;
+      nodeGroup.appendChild(childCount);
+    }
 
     nodeGroup.appendChild(circle);
     nodeGroup.appendChild(icon);
     nodeGroup.appendChild(label);
 
-    // Smooth hover effects
+    // Enhanced hover effects with smooth transitions
     const handleMouseEnter = () => {
       const nodeId = node.id;
       if (hoverStatesRef.current.get(nodeId)) return;
       
       hoverStatesRef.current.set(nodeId, true);
-      gsap.killTweensOf(nodeGroup);
+      gsap.killTweensOf([circle, icon, label]);
       
-      gsap.to(circle, {
-        scale: 1.1,
-        duration: 0.2,
-        ease: "power2.out"
-      });
+      const hoverTween = gsap.timeline()
+        .to(circle, {
+          scale: 1.15,
+          filter: "url(#glow) brightness(1.2)",
+          duration: 0.25,
+          ease: "power2.out"
+        })
+        .to(icon, {
+          scale: 1.1,
+          duration: 0.2,
+          ease: "power2.out"
+        }, "-=0.15")
+        .to(label, {
+          fill: "#F8FAFC",
+          fontSize: node.level === 0 ? "12px" : "11px",
+          duration: 0.2,
+          ease: "power2.out"
+        }, "-=0.2");
+      
+      addAnimation(hoverTween);
     };
 
     const handleMouseLeave = () => {
       const nodeId = node.id;
       hoverStatesRef.current.set(nodeId, false);
-      gsap.killTweensOf(nodeGroup);
+      gsap.killTweensOf([circle, icon, label]);
       
-      gsap.to(circle, {
-        scale: 1,
-        duration: 0.2,
-        ease: "power2.out"
-      });
+      const exitTween = gsap.timeline()
+        .to(circle, {
+          scale: 1,
+          filter: "url(#glow)",
+          duration: 0.2,
+          ease: "power2.out"
+        })
+        .to(icon, {
+          scale: 1,
+          duration: 0.15,
+          ease: "power2.out"
+        }, "-=0.1")
+        .to(label, {
+          fill: "white",
+          fontSize: node.level === 0 ? "11px" : "10px",
+          duration: 0.15,
+          ease: "power2.out"
+        }, "-=0.15");
+      
+      addAnimation(exitTween);
     };
 
     const handleClick = (e: Event) => {
       e.stopPropagation();
+      
+      // Add click animation
+      const clickTween = gsap.timeline()
+        .to(circle, {
+          scale: 0.95,
+          duration: 0.1,
+          ease: "power2.inOut"
+        })
+        .to(circle, {
+          scale: 1,
+          duration: 0.2,
+          ease: "back.out(1.4)"
+        });
+      
+      addAnimation(clickTween);
       onNodeClick(node);
     };
 
@@ -297,14 +378,14 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     nodeGroup.addEventListener('mouseleave', handleMouseLeave);
     nodeGroup.addEventListener('click', handleClick);
 
-    // Entrance animation
+    // Staggered entrance animation
     gsap.set(nodeGroup, { scale: 0, opacity: 0 });
     const entranceTween = gsap.to(nodeGroup, {
       scale: 1,
       opacity: 1,
-      duration: 0.4,
-      delay: index * 0.05,
-      ease: "back.out(1.4)"
+      duration: 0.5,
+      delay: index * 0.08,
+      ease: "back.out(1.7)"
     });
     addAnimation(entranceTween);
 
@@ -333,13 +414,14 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     line.setAttribute('stroke-width', '1.5');
     line.setAttribute('opacity', '0');
 
-    gsap.to(line, {
+    const connectionTween = gsap.to(line, {
       opacity: 0.6,
       duration: 0.5,
       delay: delay,
       ease: "power2.out"
     });
-
+    
+    addAnimation(connectionTween);
     svg.appendChild(line);
   };
 
