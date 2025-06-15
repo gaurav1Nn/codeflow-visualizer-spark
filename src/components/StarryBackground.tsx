@@ -16,22 +16,47 @@ export const StarryBackground: React.FC<StarryBackgroundProps> = ({
 }) => {
   const particleCount = density === 'light' ? 15 : density === 'medium' ? 25 : 40;
   const bubbleCount = includeBubbles ? (density === 'light' ? 8 : density === 'medium' ? 12 : 18) : 0;
-  const starCount = includeStars ? (density === 'light' ? 20 : density === 'medium' ? 35 : 50) : 0;
+  const starCount = includeStars ? (density === 'light' ? 40 : density === 'medium' ? 70 : 100) : 0;
 
   return (
     <div className={`fixed inset-0 pointer-events-none z-0 overflow-hidden ${className}`}>
-      {/* Starry particles */}
+      {/* Enhanced Starry particles */}
       {includeStars && (
         <div className="absolute inset-0">
           {Array.from({ length: starCount }, (_, i) => (
             <div
               key={`star-${i}`}
-              className="absolute w-1 h-1 bg-white rounded-full animate-float-particle opacity-60"
+              className="absolute bg-white rounded-full animate-float-particle shadow-lg"
               style={{
+                width: `${1 + Math.random() * 3}px`,
+                height: `${1 + Math.random() * 3}px`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: `${6 + Math.random() * 8}s`,
+                opacity: 0.4 + Math.random() * 0.6,
+                boxShadow: `0 0 ${2 + Math.random() * 4}px rgba(255, 255, 255, 0.8)`
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Twinkling stars */}
+      {includeStars && (
+        <div className="absolute inset-0">
+          {Array.from({ length: Math.floor(starCount / 2) }, (_, i) => (
+            <div
+              key={`twinkle-${i}`}
+              className="absolute bg-white rounded-full animate-twinkle"
+              style={{
+                width: `${2 + Math.random() * 2}px`,
+                height: `${2 + Math.random() * 2}px`,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${i * 0.5}s`,
-                animationDuration: `${8 + Math.random() * 6}s`
+                animationDuration: `${2 + Math.random() * 3}s`,
+                boxShadow: `0 0 6px rgba(255, 255, 255, 0.9)`
               }}
             />
           ))}
