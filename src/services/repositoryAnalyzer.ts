@@ -35,6 +35,11 @@ export interface RepositoryStructure {
   };
 }
 
+interface GitHubFileContentWithContent extends GitHubFileContent {
+  content: string;
+  encoding: string;
+}
+
 class RepositoryAnalyzer {
   private fileExtensionMap: Record<string, string> = {
     '.ts': 'TypeScript',
@@ -154,7 +159,7 @@ class RepositoryAnalyzer {
       if (Array.isArray(fileContents)) return; // Skip if it's a directory
       
       // Type guard to check if fileContents has content property
-      if ('content' in fileContents && typeof fileContents.content === 'string') {
+      if (this.hasContentProperty(fileContents)) {
         const content = atob(fileContents.content);
         const imports = this.extractImports(content);
         const exports = this.extractExports(content);
@@ -178,6 +183,10 @@ class RepositoryAnalyzer {
     } catch (error) {
       console.warn(`Failed to analyze imports for ${filePath}:`, error);
     }
+  }
+
+  private hasContentProperty(obj: any): obj is GitHubFileContentWithContent {
+    return obj && typeof obj === 'object' && 'content' in obj && typeof obj.content === 'string';
   }
 
   private extractImports(content: string): string[] {
