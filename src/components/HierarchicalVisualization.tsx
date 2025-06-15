@@ -20,7 +20,7 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
   searchTerm
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const animationsRef = useRef<gsap.core.Tween[]>([]);
+  const animationsRef = useRef<(gsap.core.Tween | gsap.core.Timeline)[]>([]);
   const hoverStatesRef = useRef<Map<string, boolean>>(new Map());
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export const HierarchicalVisualization: React.FC<HierarchicalVisualizationProps>
     );
   };
 
-  const addAnimation = (animation: gsap.core.Tween) => {
+  const addAnimation = (animation: gsap.core.Tween | gsap.core.Timeline) => {
     if (animation) {
       animationsRef.current.push(animation);
     }
