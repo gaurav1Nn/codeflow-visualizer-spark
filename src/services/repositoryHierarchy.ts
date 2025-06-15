@@ -81,9 +81,21 @@ export class RepositoryHierarchyService {
     return visible;
   }
 
-  // Get only root level items (directories and files at the top level)
+  // Get only top-level directories and important root files
   getRootLevelNodes(hierarchy: HierarchicalNode[]): HierarchicalNode[] {
-    return hierarchy.filter(node => node.level === 0);
+    const rootNodes = hierarchy.filter(node => node.level === 0);
+    
+    // Prioritize directories and important files
+    return rootNodes.filter(node => {
+      if (node.type === 'directory') return true;
+      
+      // Include only important root files
+      const importantFiles = [
+        'package.json', 'README.md', 'index.html', 'vite.config.ts', 
+        'tailwind.config.ts', 'tsconfig.json', '.gitignore'
+      ];
+      return importantFiles.includes(node.name);
+    }).slice(0, 8); // Limit to 8 items to prevent overcrowding
   }
 
   filterConnections(connections: DependencyConnection[], visibleNodes: HierarchicalNode[]): FilteredConnections {
@@ -93,7 +105,7 @@ export class RepositoryHierarchyService {
     );
 
     // Show fewer connections initially, more when folders are expanded
-    const maxConnections = visibleNodes.length > 10 ? 2 : 5;
+    const maxConnections = visibleNodes.length > 8 ? 2 : 4;
 
     // Prioritize connections by importance
     const primaryConnections = relevantConnections.filter(conn => {
@@ -132,12 +144,14 @@ export class RepositoryHierarchyService {
   }
 
   expandPath(hierarchy: HierarchicalNode[], targetPath: string): HierarchicalNode[] {
-    const pathParts = targetPath.split('/');
+    const pathParts = targetPath.toLowerCase().split('/');
     
     const expand = (nodes: HierarchicalNode[], currentPath: string[] = []): HierarchicalNode[] => {
       return nodes.map(node => {
-        const nodePath = [...currentPath, node.name];
-        const shouldExpand = pathParts.slice(0, nodePath.length).join('/') === nodePath.join('/');
+        const nodePath = [...currentPath, node.name.toLowerCase()];
+        const shouldExpand = pathParts.some(part => 
+          nodePath.some(pathSegment => pathSegment.includes(part))
+        );
         
         if (shouldExpand && node.children) {
           return {
