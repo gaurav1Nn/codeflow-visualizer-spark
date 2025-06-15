@@ -3,77 +3,84 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Code2,
-  ArrowRight,
   Github,
-  Star
+  ArrowRight
 } from 'lucide-react';
 
 export const ProfessionalHero = () => {
   return (
-    <div className="relative py-24 md:py-32">
-      {/* Subtle geometric background */}
-      <div className="absolute inset-0 geometric-bg pointer-events-none" />
+    <div className="relative py-32 md:py-40 overflow-hidden">
+      {/* Animated diagonal lines background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+        <div className="absolute inset-0 opacity-30">
+          {/* Diagonal lines */}
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={i}
+              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-600/50 to-transparent transform rotate-12 animate-pulse"
+              style={{
+                left: `${i * 10}%`,
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: '3s'
+              }}
+            />
+          ))}
+          {/* Additional diagonal lines in opposite direction */}
+          {Array.from({ length: 12 }, (_, i) => (
+            <div
+              key={`reverse-${i}`}
+              className="absolute h-full w-px bg-gradient-to-b from-transparent via-slate-600/30 to-transparent transform -rotate-12 animate-pulse"
+              style={{
+                left: `${i * 10 + 5}%`,
+                animationDelay: `${i * 0.3}s`,
+                animationDuration: '4s'
+              }}
+            />
+          ))}
+        </div>
+      </div>
       
-      <div className="container mx-auto px-6 text-center relative">
-        {/* Professional Badge */}
-        <div className="mb-8">
-          <Badge 
-            variant="secondary" 
-            className="bg-secondary text-secondary-foreground border-border px-4 py-2 text-sm font-medium"
-          >
-            <Star className="w-4 h-4 mr-2" />
-            AI-Powered Repository Analysis
-          </Badge>
-        </div>
-
-        {/* Clean Title */}
-        <div className="mb-8">
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-foreground">
-            Visualize Your
-            <br />
-            <span className="text-primary">Code Architecture</span>
-          </h1>
-          
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-secondary rounded-2xl border border-border">
-              <Code2 className="w-12 h-12 text-primary" />
-            </div>
-          </div>
-        </div>
-
-        {/* Clean Subtitle */}
+      <div className="container mx-auto px-6 text-center relative z-10">
+        {/* Main Title */}
         <div className="mb-12">
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Transform your repositories into interactive visualizations with AI-driven insights, 
-            comprehensive analysis, and intuitive exploration tools.
+          <h1 className="text-6xl md:text-8xl font-bold leading-tight mb-8 text-white">
+            Turn your code into live
+            <br />
+            <span className="text-white">visualizations</span>
+          </h1>
+        </div>
+
+        {/* Subtitle */}
+        <div className="mb-16">
+          <p className="text-xl md:text-2xl text-slate-300 max-w-4xl mx-auto leading-relaxed">
+            Visualize, understand, and edit GitHub repositories instantly.
           </p>
         </div>
 
-        {/* Clean CTA Section */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button 
-              size="lg"
-              className="professional-button px-8 py-4 rounded-lg font-semibold text-lg"
-            >
-              <Github className="w-5 h-5 mr-2" />
-              Analyze Repository
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+        {/* GitHub Input Section */}
+        <div className="mb-8 max-w-3xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50">
+            <div className="flex items-center flex-1 w-full">
+              <Github className="w-6 h-6 text-slate-400 mr-4 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Paste your GitHub repo link here"
+                className="flex-1 bg-transparent text-white placeholder-slate-400 text-lg outline-none w-full"
+              />
+            </div>
             
             <Button 
-              variant="outline"
               size="lg"
-              className="outline-button px-8 py-4 rounded-lg font-medium text-lg"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 transform hover:scale-105"
             >
-              View Demo
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
-          
-          <p className="text-sm text-muted-foreground mt-6 max-w-md mx-auto">
-            Free to use • No registration required • Works with public repositories
-          </p>
+        </div>
+
+        {/* Additional Info */}
+        <div className="text-slate-400 text-sm">
+          Free to use • No registration required • Works with public repositories
         </div>
       </div>
     </div>
