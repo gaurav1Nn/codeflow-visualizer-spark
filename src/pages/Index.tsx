@@ -9,6 +9,7 @@ import { EnhancedStarryBackground } from '@/components/EnhancedStarryBackground'
 import { GeminiChat } from '@/components/GeminiChat';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { useGitHubData } from '@/hooks/useGitHubData';
+import { chatContextManager } from '@/services/chatContextManager';
 
 const Index = () => {
   const githubIntegrationRef = useRef<{ analyzeRepository: (url: string) => void }>(null);
@@ -20,6 +21,7 @@ const Index = () => {
   const featuresRef = useScrollReveal({ direction: 'right', delay: 0.6 });
 
   const handleAnalyzeRepo = (repoUrl: string) => {
+    console.log('[Index] Analyzing repository:', repoUrl);
     if (githubIntegrationRef.current) {
       githubIntegrationRef.current.analyzeRepository(repoUrl);
     }
@@ -27,13 +29,25 @@ const Index = () => {
 
   // Update repository data when GitHub data changes
   React.useEffect(() => {
+    console.log('[Index] GitHub data changed:', {
+      hasRepository: !!githubData.repository,
+      repositoryName: githubData.repository?.name
+    });
+
     if (githubData.repository) {
-      setRepositoryData({
+      const contextData = {
         repository: githubData.repository,
         commits: githubData.commits,
         contributors: githubData.contributors,
         branches: githubData.branches
-      });
+      };
+
+      setRepositoryData(contextData);
+      
+      // Update the chat context manager
+      chatContextManager.setContext(contextData);
+      
+      console.log('[Index] Repository context updated for chat');
     }
   }, [githubData]);
 
