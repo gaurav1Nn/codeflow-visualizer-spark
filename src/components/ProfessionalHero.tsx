@@ -85,7 +85,7 @@ export const ProfessionalHero: React.FC<ProfessionalHeroProps> = ({
       <div className="container mx-auto px-6 text-center relative z-10">
         {/* Enhanced Main Title */}
         <div ref={titleRef} className="mb-12">
-          <h1 className="text-hero font-medium leading-tight mb-8 text-black text-shadow font-serif tracking-tight">
+          <h1 className="text-hero font-medium leading-tight mb-8 text-white text-shadow font-serif tracking-tight">
             Turn your code into live
             <br />
             <span className="gradient-text animate-text-shimmer">visualizations</span>
