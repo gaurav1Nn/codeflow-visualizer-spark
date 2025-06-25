@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -77,19 +76,31 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       addLog('No repository data found');
     }
 
-    // Test 2: Supabase Connection - Fixed to avoid restricted schema access
+    // Test 2: Supabase Connection - Fixed to use a simple query
     addLog('Testing Supabase connection...');
     try {
-      // Use a simple RPC call instead of accessing system tables
-      const { data, error } = await supabase.rpc('get_current_user');
-      if (error && !error.message.includes('function get_current_user() does not exist')) {
-        results.push({
-          test: 'Supabase Connection',
-          status: 'fail',
-          message: `Supabase connection failed: ${error.message}`,
-          details: error
-        });
-        addLog(`Supabase connection failed: ${error.message}`);
+      // Use a simple query to test connection instead of RPC
+      const { data, error } = await supabase.from('profiles').select('id').limit(1);
+      
+      if (error) {
+        // If profiles table doesn't exist, that's still a successful connection test
+        if (error.message.includes('relation "public.profiles" does not exist')) {
+          results.push({
+            test: 'Supabase Connection',
+            status: 'pass',
+            message: 'Supabase connection successful (profiles table not found, but connection works)',
+            details: 'Connection established'
+          });
+          addLog('Supabase connection successful');
+        } else {
+          results.push({
+            test: 'Supabase Connection',
+            status: 'fail',
+            message: `Supabase connection failed: ${error.message}`,
+            details: error
+          });
+          addLog(`Supabase connection failed: ${error.message}`);
+        }
       } else {
         results.push({
           test: 'Supabase Connection',
@@ -99,7 +110,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         });
         addLog('Supabase connection successful');
       }
-    } catch (error) {
+    } catch (error: any) {
       results.push({
         test: 'Supabase Connection',
         status: 'pass',
@@ -145,7 +156,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         });
         addLog('Gemini API connection successful');
       }
-    } catch (error) {
+    } catch (error: any) {
       results.push({
         test: 'Gemini API Configuration',
         status: 'fail',

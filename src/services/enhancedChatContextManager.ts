@@ -1,4 +1,3 @@
-
 import { EnhancedRepositoryStructure, EnhancedFileNode, RepositoryInsight } from './enhancedRepositoryAnalyzer';
 
 export interface EnhancedRepositoryContext {
@@ -172,7 +171,12 @@ export class EnhancedChatContextManager {
         overview: 'No repository data available',
         architecture: 'Unknown',
         keyFiles: [],
-        metrics: {},
+        metrics: {
+          totalFiles: 0,
+          maintainability: 0,
+          complexity: 0,
+          languages: []
+        },
         insights: [],
         recommendations: []
       };
@@ -185,10 +189,10 @@ export class EnhancedChatContextManager {
       architecture: this.context.architectureOverview,
       keyFiles: this.identifyKeyFiles(),
       metrics: {
-        totalFiles: structure.metrics.totalFiles,
-        maintainability: structure.metrics.maintainability,
-        complexity: structure.metrics.complexity.average,
-        languages: Object.keys(structure.metrics.languages)
+        totalFiles: structure.metrics?.totalFiles || structure.nodes.length,
+        maintainability: structure.metrics?.maintainability || 0,
+        complexity: structure.metrics?.complexity?.average || 0,
+        languages: structure.metrics?.languages ? Object.keys(structure.metrics.languages) : []
       },
       insights: structure.insights.slice(0, 5),
       recommendations: this.generateRecommendations()
