@@ -76,37 +76,26 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       addLog('No repository data found');
     }
 
-    // Test 2: Supabase Connection - Fixed to use a simple query
+    // Test 2: Supabase Connection - Fixed to test client initialization
     addLog('Testing Supabase connection...');
     try {
-      // Use a simple query to test connection instead of RPC
-      const { data, error } = await supabase.from('profiles').select('id').limit(1);
+      // Test Supabase client initialization without querying specific tables
+      const { data: { user }, error } = await supabase.auth.getUser();
       
-      if (error) {
-        // If profiles table doesn't exist, that's still a successful connection test
-        if (error.message.includes('relation "public.profiles" does not exist')) {
-          results.push({
-            test: 'Supabase Connection',
-            status: 'pass',
-            message: 'Supabase connection successful (profiles table not found, but connection works)',
-            details: 'Connection established'
-          });
-          addLog('Supabase connection successful');
-        } else {
-          results.push({
-            test: 'Supabase Connection',
-            status: 'fail',
-            message: `Supabase connection failed: ${error.message}`,
-            details: error
-          });
-          addLog(`Supabase connection failed: ${error.message}`);
-        }
+      if (error && !error.message.includes('session_not_found')) {
+        results.push({
+          test: 'Supabase Connection',
+          status: 'fail',
+          message: `Supabase connection failed: ${error.message}`,
+          details: error
+        });
+        addLog(`Supabase connection failed: ${error.message}`);
       } else {
         results.push({
           test: 'Supabase Connection',
           status: 'pass',
           message: 'Supabase connection successful',
-          details: data
+          details: 'Client initialized and auth endpoint accessible'
         });
         addLog('Supabase connection successful');
       }
