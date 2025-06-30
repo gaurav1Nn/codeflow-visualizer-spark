@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Header } from '@/components/Header';
 import { GitHubIntegration } from '@/components/GitHubIntegration';
 import { ProfessionalHero } from '@/components/ProfessionalHero';
@@ -8,13 +8,9 @@ import { FeaturesGrid } from '@/components/FeaturesGrid';
 import { EnhancedStarryBackground } from '@/components/EnhancedStarryBackground';
 import { GeminiChat } from '@/components/GeminiChat';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { useGitHubData } from '@/hooks/useGitHubData';
 
 const Index = () => {
   const githubIntegrationRef = useRef<{ analyzeRepository: (url: string) => void }>(null);
-  const [repositoryData, setRepositoryData] = useState(null);
-  const { data: githubData } = useGitHubData();
-  
   const heroRef = useScrollReveal({ direction: 'up', delay: 0.2 });
   const statsRef = useScrollReveal({ direction: 'left', delay: 0.4 });
   const featuresRef = useScrollReveal({ direction: 'right', delay: 0.6 });
@@ -24,18 +20,6 @@ const Index = () => {
       githubIntegrationRef.current.analyzeRepository(repoUrl);
     }
   };
-
-  // Update repository data when GitHub data changes
-  React.useEffect(() => {
-    if (githubData.repository) {
-      setRepositoryData({
-        repository: githubData.repository,
-        commits: githubData.commits,
-        contributors: githubData.contributors,
-        branches: githubData.branches
-      });
-    }
-  }, [githubData]);
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -73,8 +57,8 @@ const Index = () => {
         <FeaturesGrid />
       </div>
 
-      {/* AI Chat Assistant with Repository Context */}
-      <GeminiChat repositoryData={repositoryData} />
+      {/* AI Chat Assistant */}
+      <GeminiChat />
     </div>
   );
 };

@@ -11,7 +11,7 @@ interface ScrollRevealOptions {
 }
 
 export const useScrollReveal = (options: ScrollRevealOptions = {}) => {
-  const elementRef = useRef<HTMLDivElement>(null);
+  const elementRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const element = elementRef.current;
