@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,13 +77,11 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       addLog('No repository data found');
     }
 
-    // Test 2: Supabase Connection - Fixed to test client initialization
+    // Test 2: Supabase Connection
     addLog('Testing Supabase connection...');
     try {
-      // Test Supabase client initialization without querying specific tables
-      const { data: { user }, error } = await supabase.auth.getUser();
-      
-      if (error && !error.message.includes('session_not_found')) {
+      const { data, error } = await supabase.from('_supabase_version').select('*').limit(1);
+      if (error) {
         results.push({
           test: 'Supabase Connection',
           status: 'fail',
@@ -95,21 +94,21 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
           test: 'Supabase Connection',
           status: 'pass',
           message: 'Supabase connection successful',
-          details: 'Client initialized and auth endpoint accessible'
+          details: data
         });
         addLog('Supabase connection successful');
       }
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: 'Supabase Connection',
-        status: 'pass',
-        message: 'Supabase client initialized successfully',
-        details: 'Client ready for operations'
+        status: 'fail',
+        message: `Supabase connection error: ${error.message}`,
+        details: error
       });
-      addLog('Supabase client ready');
+      addLog(`Supabase connection error: ${error.message}`);
     }
 
-    // Test 3: Gemini API Configuration
+    // Test 3: Gemini API Key Configuration
     addLog('Testing Gemini API configuration...');
     try {
       const { data, error } = await supabase.functions.invoke('gemini-code-assistant', {
@@ -145,7 +144,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         });
         addLog('Gemini API connection successful');
       }
-    } catch (error: any) {
+    } catch (error) {
       results.push({
         test: 'Gemini API Configuration',
         status: 'fail',
@@ -155,14 +154,14 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       addLog(`Gemini API test failed: ${error.message}`);
     }
 
-    // Test 4: Edge Function Deployment - Fixed authorization header
+    // Test 4: Edge Function Deployment
     addLog('Testing edge function deployment...');
     try {
       const response = await fetch('https://oinblhbdiiorkktrwzkm.supabase.co/functions/v1/gemini-code-assistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pbmJsaGJkaWlvcmtrdHJ3emttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk5NTU0MzQsImV4cCI6MjA2NTUzMTQzNH0.cERD7XJYKLwXk11doy65VNe83VLfdMQ5vVXFW03_-_I`
+          'Authorization': `Bearer ${supabase.supabaseKey}`
         },
         body: JSON.stringify({
           message: 'Health check',
