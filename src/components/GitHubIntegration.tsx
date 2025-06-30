@@ -24,7 +24,11 @@ interface GitHubIntegrationRef {
   analyzeRepository: (url: string) => void;
 }
 
-export const GitHubIntegration = forwardRef<GitHubIntegrationRef>((props, ref) => {
+interface GitHubIntegrationProps {
+  onDataChange?: (data: any) => void;
+}
+
+export const GitHubIntegration = forwardRef<GitHubIntegrationRef, GitHubIntegrationProps>(({ onDataChange }, ref) => {
   const [repoUrl, setRepoUrl] = useState('');
   const { data, isLoading, error, analyzeRepository, progress } = useGitHubData();
   const { toast } = useToast();
@@ -39,6 +43,18 @@ export const GitHubIntegration = forwardRef<GitHubIntegrationRef>((props, ref) =
       handleAnalyzeRepo(url);
     }
   }));
+
+  // Notify parent component when repository data changes
+  useEffect(() => {
+    if (data.repository && onDataChange) {
+      onDataChange({
+        repository: data.repository,
+        commits: data.commits,
+        contributors: data.contributors,
+        branches: data.branches
+      });
+    }
+  }, [data, onDataChange]);
 
   useEffect(() => {
     // Enhanced entrance animation

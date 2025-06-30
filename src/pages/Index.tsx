@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Header } from '@/components/Header';
 import { GitHubIntegration } from '@/components/GitHubIntegration';
 import { ProfessionalHero } from '@/components/ProfessionalHero';
@@ -11,6 +11,8 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 
 const Index = () => {
   const githubIntegrationRef = useRef<{ analyzeRepository: (url: string) => void }>(null);
+  const [repositoryData, setRepositoryData] = useState<any>(null);
+  
   const heroRef = useScrollReveal({ direction: 'up', delay: 0.2 });
   const statsRef = useScrollReveal({ direction: 'left', delay: 0.4 });
   const featuresRef = useScrollReveal({ direction: 'right', delay: 0.6 });
@@ -19,6 +21,10 @@ const Index = () => {
     if (githubIntegrationRef.current) {
       githubIntegrationRef.current.analyzeRepository(repoUrl);
     }
+  };
+
+  const handleRepositoryDataChange = (data: any) => {
+    setRepositoryData(data);
   };
 
   return (
@@ -43,7 +49,10 @@ const Index = () => {
       {/* Main Content - Repository Visualization */}
       <div id="github-analysis" className="relative px-6 py-20 z-10">
         <div className="container mx-auto max-w-7xl">
-          <GitHubIntegration ref={githubIntegrationRef} />
+          <GitHubIntegration 
+            ref={githubIntegrationRef} 
+            onDataChange={handleRepositoryDataChange}
+          />
         </div>
       </div>
 
@@ -58,7 +67,7 @@ const Index = () => {
       </div>
 
       {/* AI Chat Assistant */}
-      <GeminiChat />
+      <GeminiChat repositoryData={repositoryData} />
     </div>
   );
 };
